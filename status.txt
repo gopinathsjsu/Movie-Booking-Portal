@@ -1,4 +1,4 @@
-Current Lecture:16. Homepage Layout
+Current Lecture:11. Auth APIs integration
 
 Main Branch: development
 CurrentWorking Branch:

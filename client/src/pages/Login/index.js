@@ -3,23 +3,17 @@ import React, { useEffect } from "react";
 import Button from "../../components/Button";
 import { Link, useNavigate } from "react-router-dom";
 import { LoginUser } from "../../apicalls/users";
-import { useDispatch } from "react-redux";
-import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
 
 const Login = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate()
   const onFinish = async (values) => {
     try {
-      dispatch(ShowLoading())
       const response = await LoginUser(values);
-      dispatch(HideLoading())
       if(response.success) {
         message.success(response.message)
         localStorage.setItem("token", response.data)
         window.location.href = '/';
       } else {
-        dispatch(HideLoading())
         message.error(response.message)
       }
     } catch (error) {

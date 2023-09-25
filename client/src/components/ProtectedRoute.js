@@ -2,29 +2,22 @@ import React, { useEffect, useState } from 'react'
 import { GetCurrentUser } from '../apicalls/users'
 import { message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { SetUser } from '../redux/usersSlice';
-import { HideLoading, ShowLoading } from '../redux/loadersSlice';
 
 const ProtectedRoute = ({children}) => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const {user} = useSelector((state) => state.users)
+    const [user, setUser] = useState(null);
 
     const getCurrentUser = async () => {
         try {
-            dispatch(ShowLoading())
             const response = await GetCurrentUser();
-            dispatch(HideLoading())
             if(response.success) {
-                dispatch(SetUser(response.data));
+                setUser(response.data);
             }else {
-                dispatch(SetUser(null));
+                setUser(null);
                 message.error(response.message);
             }
         } catch (error) {
-            dispatch(HideLoading())
-            dispatch(SetUser(null));
+            setUser(null);
             message.error(error.message);
         }
     }
@@ -37,31 +30,10 @@ const ProtectedRoute = ({children}) => {
         }
         
     }, [])
-    console.log(user)
+
   return (
-    user && (<div className="layout p-1">
-        <div className='header bg-primary flex justify-between p-2'>
-            <div>
-                <h1 className='text-2x1 text-white'>
-                    BOOKMYMOVIE
-                </h1>
-            </div>
-            <div className='bg-white p-1 flex gap-1'>
-                < i className = "ri-shield-user-line text-primary" > </i>
-                <h1 className='text-sm '>
-                    {user.name}
-                </h1>
-                < i className = "ri-logout-box-r-line ml-2"
-                onClick={()=> {
-                    localStorage.removeItem("token");
-                    navigate("/login")
-                }}
-                > </i>
-            </div>
-        </div>
-        <div className='content mt-1 p-1'>
-            {children}
-        </div>  
+    user && (<div>
+        {children}
     </div>)
   )
 }
