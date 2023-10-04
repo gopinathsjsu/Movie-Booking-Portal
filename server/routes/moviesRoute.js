@@ -1,10 +1,9 @@
 const router = require("express").Router();
 const Movie = require("../models/movieModel");
 const authMiddleware = require("../middlewares/authMiddleware");
-const isAdmin = require("../middlewares/isAdminMiddleware");
 
 // Add a new movie
-router.post("/add-movie", authMiddleware, isAdmin, async (req, res) => {
+router.post("/add-movie", authMiddleware, async (req, res) => {
   try {
     const newMovie = new Movie(req.body);
     await newMovie.save();
@@ -20,57 +19,57 @@ router.post("/add-movie", authMiddleware, isAdmin, async (req, res) => {
   }
 });
 
-// get all movies
+// Get all movies
 router.get("/get-all-movies", async (req, res) => {
   try {
     const movies = await Movie.find().sort({ createdAt: -1 });
     res.send({
       success: true,
       message: "Movies fetched successfully",
-      data: movies,
-    });
+      data: movies
+    })
   } catch (error) {
     res.send({
       success: false,
-      message: error.message,
+      message: error.message
     });
   }
 });
 
-// update a movie
-router.post("/update-movie", authMiddleware, isAdmin, async (req, res) => {
-  try {
+// Update a movie
+router.post("/update-movie", authMiddleware, async (req,res) => {
+  try{
     await Movie.findByIdAndUpdate(req.body.movieId, req.body);
     res.send({
       success: true,
       message: "Movie updated successfully",
     });
-  } catch (error) {
+  }catch (error) {
     res.send({
       success: false,
-      message: error.message,
-    });
+      message: error.message
+    })
   }
 });
 
-// delete a movie
-router.post("/delete-movie", authMiddleware, isAdmin, async (req, res) => {
-  try {
+// Delete a movie
+router.post("/delete-movie", authMiddleware, async (req, res) => {
+  try{
     await Movie.findByIdAndDelete(req.body.movieId);
     res.send({
       success: true,
-      message: "Movie deleted successfully",
+      message: "Movie deleted successfully"
     });
   } catch (error) {
     res.send({
       success: false,
-      message: error.message,
-    });
+      message: error.message
+    })
   }
-});
+})
 
 // get a movie by id
-router.get("/get-movie-by-id/:id", async (req, res) => {
+router.get('/get-movie-by-id/:id', async (req,res) => {
   try {
     const movie = await Movie.findById(req.params.id);
     res.send({
@@ -84,6 +83,6 @@ router.get("/get-movie-by-id/:id", async (req, res) => {
       message: error.message,
     });
   }
-});
+})
 
 module.exports = router;
