@@ -13,7 +13,7 @@ const Button = ({ title, onClick, variant, disable, fullWidth, type }) => {
     }
 
   return (
-    <button className={className} type={type} onClick={onClick} disabled={disable} >{title}</button>
+    <button className={className} type={type} >{title}</button>
   )
 }
 
