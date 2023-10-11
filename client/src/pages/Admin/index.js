@@ -4,22 +4,20 @@ import { Tabs } from "antd";
 import MoviesList from "./MoviesList";
 import TheatresList from "./TheatresList";
 
-function Admin() {
+const Admin = () => {
   return (
     <div>
       <PageTitle title="Admin" />
-
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="Movies" key="1">
-            <MoviesList />
+          <MoviesList/>
         </Tabs.TabPane>
-
-        <Tabs.TabPane tab="Theatres" key="2">
-            <TheatresList />
+        <Tabs.TabPane tab="Theaters" key="2">
+          <TheatresList/>
         </Tabs.TabPane>
       </Tabs>
     </div>
   );
-}
+};
 
 export default Admin;
