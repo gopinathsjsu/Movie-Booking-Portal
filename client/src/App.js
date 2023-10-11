@@ -16,6 +16,7 @@ import BookShow from "./pages/BookShow";
 
 function App() {
   const { loading } = useSelector((state) => state.loaders);
+
   return (
     <div>
       {loading && (
@@ -41,7 +42,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="/book-show/:id"
             element={
               <ProtectedRoute>
