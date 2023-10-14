@@ -18,12 +18,3 @@ FRONTEND:
 5: @reduxjs/toolkit
 7: moment
 8: react-stripe-checkout
-
-
-
-Backend:
-1: express
-2: jsonwebtoken
-3: bcryptjs
-4: dotnev
-5: Nodemon
