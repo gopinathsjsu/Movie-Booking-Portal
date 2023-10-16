@@ -11,7 +11,7 @@ const showSchema = new mongoose.Schema({
     },
     time: {
         type: String,
-        required: true
+        required: true,
     },
     movie: {
         type: mongoose.Schema.Types.ObjectId,
