@@ -1,0 +1,29 @@
+Current:29. Shows Intro
+
+Main Branch: development
+CurrentWorking Branch:
+
+
+
+
+
+package installed:
+
+FRONTEND:
+1: react-router-dom
+2: antd 
+3: axios
+4: redux
+5: react-redux
+5: @reduxjs/toolkit
+7: moment
+8: react-stripe-checkout
+
+
+
+Backend:
+1: express
+2: jsonwebtoken
+3: bcryptjs
+4: dotnev
+5: Nodemon
