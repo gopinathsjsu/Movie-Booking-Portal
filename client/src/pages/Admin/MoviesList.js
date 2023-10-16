@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Button from "../../components/Button";
-import MoviesForm from "./MoviesForm";
+import MovieForm from "./MovieForm";
 import moment from "moment";
-import { Table, message } from "antd";
+import { message, Table } from "antd";
 import { useDispatch } from "react-redux";
 import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
 import { DeleteMovie, GetAllMovies } from "../../apicalls/movies";
 
-const MoviesList = () => {
-  const [movies, setMovies] = useState([]);
-  const [showMovieFormModal, setShowMovieFormModal] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState(null);
-  const [formType, setFormType] = useState("add");
+function MoviesList() {
+  const [movies, setMovies] = React.useState([]);
+  const [showMovieFormModal, setShowMovieFormModal] = React.useState(false);
+  const [selectedMovie, setSelectedMovie] = React.useState(null);
+  const [formType, setFormType] = React.useState("add");
   const dispatch = useDispatch();
   const getData = async () => {
     try {
@@ -30,10 +30,12 @@ const MoviesList = () => {
   };
 
   const handleDelete = async (movieId) => {
-    try{
+    try {
       dispatch(ShowLoading());
-      const response = await DeleteMovie({movieId});
-      if(response.success) {
+      const response = await DeleteMovie({
+        movieId,
+      });
+      if (response.success) {
         message.success(response.message);
         getData();
       } else {
@@ -44,18 +46,22 @@ const MoviesList = () => {
       dispatch(HideLoading());
       message.error(error.message);
     }
-  }
-
-  useEffect(() => {
-    getData();
-  }, []);
+  };
 
   const columns = [
     {
       title: "Poster",
       dataIndex: "poster",
       render: (text, record) => {
-        return <img src={record.poster} alt="poster" height="60" width="80" className="br-1" />;
+        return (
+          <img
+            src={record.poster}
+            alt="poster"
+            height="60"
+            width="80"
+            className="br-1"
+          />
+        );
       },
     },
     {
@@ -66,13 +72,6 @@ const MoviesList = () => {
     {
       title: "Description",
       dataIndex: "description",
-      render: (text, record) => {
-        if (text.length > 50) {
-          const newDes = text.substring(0, 51) + "...";
-          return newDes;
-        }
-        return text;
-      },
     },
     {
       title: "Duration",
@@ -99,13 +98,14 @@ const MoviesList = () => {
       render: (text, record) => {
         return (
           <div className="flex gap-1">
-            <i className="ri-delete-bin-line"
-              onClick={()=> {
+            <i
+              className="ri-delete-bin-line"
+              onClick={() => {
                 handleDelete(record._id);
               }}
             ></i>
             <i
-              className="ri-edit-box-line"
+              className="ri-pencil-line"
               onClick={() => {
                 setSelectedMovie(record);
                 setFormType("edit");
@@ -118,12 +118,16 @@ const MoviesList = () => {
     },
   ];
 
+  useEffect(() => {
+    getData();
+  }, []);
+
   return (
     <div>
       <div className="flex justify-end mb-1">
         <Button
           title="Add Movie"
-          variant="outline"
+          variant="outlined"
           onClick={() => {
             setShowMovieFormModal(true);
             setFormType("add");
@@ -134,7 +138,7 @@ const MoviesList = () => {
       <Table columns={columns} dataSource={movies} />
 
       {showMovieFormModal && (
-        <MoviesForm
+        <MovieForm
           showMovieFormModal={showMovieFormModal}
           setShowMovieFormModal={setShowMovieFormModal}
           selectedMovie={selectedMovie}
@@ -145,6 +149,6 @@ const MoviesList = () => {
       )}
     </div>
   );
-};
+}
 
 export default MoviesList;

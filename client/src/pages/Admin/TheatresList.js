@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { GetAllTheatres, UpdateTheatre } from "../../apicalls/theatres";
+import { useDispatch, useSelector } from "react-redux";
 import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
-import { useDispatch } from "react-redux";
-import { Table, message } from "antd";
+import { message, Table } from "antd";
 
-const TheatersList = () => {
-  const [theaters, setTheaters] = useState([]);
+function TheatresList() {
+  const [theatres = [], setTheatres] = useState([]);
   const dispatch = useDispatch();
 
   const getData = async () => {
@@ -13,7 +13,7 @@ const TheatersList = () => {
       dispatch(ShowLoading());
       const response = await GetAllTheatres();
       if (response.success) {
-        setTheaters(response.data);
+        setTheatres(response.data);
       } else {
         message.error(response.message);
       }
@@ -111,12 +111,11 @@ const TheatersList = () => {
   useEffect(() => {
     getData();
   }, []);
-
   return (
     <div>
-      <Table columns={columns} dataSource={theaters} />
+      <Table columns={columns} dataSource={theatres} />
     </div>
   );
-};
+}
 
-export default TheatersList;
+export default TheatresList;

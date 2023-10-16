@@ -1,30 +1,38 @@
 import React, { useEffect, useState } from "react";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
-import TheaterForm from "./TheaterForm";
-import { DeleteTheatre, GetAllTheatresByOwner } from "../../apicalls/theatres";
-import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
+import TheatreForm from "./TheatreForm";
+import {
+  DeleteTheatre,
+  GetAllTheatres,
+  GetAllTheatresByOwner,
+} from "../../apicalls/theatres";
 import { useDispatch, useSelector } from "react-redux";
-import { Table, message } from "antd";
+import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
+import { message, Table } from "antd";
 import Shows from "./Shows";
 
-const TheatersList = () => {
+function TheatresList() {
   const { user } = useSelector((state) => state.users);
-  const [showTheaterFormModal, setShowTheaterFormModal] = useState(false);
-  const [selectedTheater, setSelectedTheater] = useState(null);
-  const [formType, setFormType] = useState("add");
-  const [theaters, setTheaters] = useState([]);
+  const [showTheatreFormModal = false, setShowTheatreFormModal] =
+    useState(false);
+  const [selectedTheatre = null, setSelectedTheatre] = useState(null);
+  const [formType = "add", setFormType] = useState("add");
+  const [theatres = [], setTheatres] = useState([]);
 
   const [openShowsModal = false, setOpenShowsModal] = useState(false);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const getData = async () => {
     try {
       dispatch(ShowLoading());
-      const response = await GetAllTheatresByOwner({ owner: user._id });
+      const response = await GetAllTheatresByOwner({
+        owner: user._id,
+      });
       if (response.success) {
-        setTheaters(response.data);
+        setTheatres(response.data);
       } else {
         message.error(response.message);
       }
@@ -45,6 +53,7 @@ const TheatersList = () => {
       } else {
         message.error(response.message);
       }
+      dispatch(HideLoading());
     } catch (error) {
       dispatch(HideLoading());
       message.error(error.message);
@@ -92,18 +101,19 @@ const TheatersList = () => {
               }}
             ></i>
             <i
-              className="ri-edit-box-line"
+              className="ri-pencil-line"
               onClick={() => {
                 setFormType("edit");
-                setSelectedTheater(record);
-                setShowTheaterFormModal(true);
+                setSelectedTheatre(record);
+                setShowTheatreFormModal(true);
               }}
             ></i>
+
             {record.isActive && (
               <span
                 className="underline"
                 onClick={() => {
-                  setSelectedTheater(record);
+                  setSelectedTheatre(record);
                   setOpenShowsModal(true);
                 }}
               >
@@ -119,7 +129,6 @@ const TheatersList = () => {
   useEffect(() => {
     getData();
   }, []);
-
   return (
     <div>
       <div className="flex justify-end mb-1">
@@ -128,33 +137,34 @@ const TheatersList = () => {
           title="Add Theatre"
           onClick={() => {
             setFormType("add");
-            setShowTheaterFormModal(true);
+            setShowTheatreFormModal(true);
           }}
         />
       </div>
 
-      <Table columns={columns} dataSource={theaters} />
+      <Table columns={columns} dataSource={theatres} />
 
-      {showTheaterFormModal && (
-        <TheaterForm
-          showTheaterFormModal={showTheaterFormModal}
-          setShowTheaterFormModal={setShowTheaterFormModal}
+      {showTheatreFormModal && (
+        <TheatreForm
+          showTheatreFormModal={showTheatreFormModal}
+          setShowTheatreFormModal={setShowTheatreFormModal}
           formType={formType}
           setFormType={setFormType}
-          selectedTheater={selectedTheater}
-          setSelectedTheater={setSelectedTheater}
+          selectedTheatre={selectedTheatre}
+          setSelectedTheatre={setSelectedTheatre}
           getData={getData}
         />
       )}
+
       {openShowsModal && (
         <Shows
           openShowsModal={openShowsModal}
           setOpenShowsModal={setOpenShowsModal}
-          theatre={selectedTheater}
+          theatre={selectedTheatre}
         />
       )}
     </div>
   );
-};
+}
 
-export default TheatersList;
+export default TheatresList;

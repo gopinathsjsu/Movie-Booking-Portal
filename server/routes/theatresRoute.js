@@ -1,9 +1,11 @@
 const router = require("express").Router();
 const authMiddleware = require("../middlewares/authMiddleware");
+const isAdmin = require("../middlewares/isAdminMiddleware");
 const Theatre = require("../models/theatreModel");
 const Show = require("../models/showModel");
 
-router.post("/add-theatre", authMiddleware, async (req, res) => {
+// add theatre
+router.post("/add-theatre", authMiddleware, isAdmin, async (req, res) => {
   try {
     const newTheatre = new Theatre(req.body);
     await newTheatre.save();
@@ -19,9 +21,12 @@ router.post("/add-theatre", authMiddleware, async (req, res) => {
   }
 });
 
+// get all theatres
 router.get("/get-all-theatres", authMiddleware, async (req, res) => {
   try {
-    const theatres = await await Theatre.find().populate('owner').sort({ createdAt: -1 });
+    const theatres = await Theatre.find()
+      .populate("owner")
+      .sort({ createdAt: -1 });
     res.send({
       success: true,
       message: "Theatres fetched successfully",
@@ -35,6 +40,7 @@ router.get("/get-all-theatres", authMiddleware, async (req, res) => {
   }
 });
 
+// get all theatres by owner
 router.post("/get-all-theatres-by-owner", authMiddleware, async (req, res) => {
   try {
     const theatres = await Theatre.find({ owner: req.body.owner }).sort({
@@ -53,12 +59,13 @@ router.post("/get-all-theatres-by-owner", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/update-theatre", authMiddleware, async (req, res) => {
+// update theatre
+router.post("/update-theatre", authMiddleware, isAdmin, async (req, res) => {
   try {
     await Theatre.findByIdAndUpdate(req.body.theatreId, req.body);
     res.send({
       success: true,
-      message: "Theatre update successfully",
+      message: "Theatre updated successfully",
     });
   } catch (error) {
     res.send({
@@ -68,7 +75,8 @@ router.post("/update-theatre", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/delete-theatre", authMiddleware, async (req, res) => {
+// delete theatre
+router.post("/delete-theatre", authMiddleware, isAdmin, async (req, res) => {
   try {
     await Theatre.findByIdAndDelete(req.body.theatreId);
     res.send({
@@ -84,7 +92,7 @@ router.post("/delete-theatre", authMiddleware, async (req, res) => {
 });
 
 // add show
-router.post("/add-show", authMiddleware, async (req, res) => {
+router.post("/add-show", authMiddleware, isAdmin, async (req, res) => {
   try {
     const newShow = new Show(req.body);
     await newShow.save();
@@ -108,6 +116,7 @@ router.post("/get-all-shows-by-theatre", authMiddleware, async (req, res) => {
       .sort({
         createdAt: -1,
       });
+
     res.send({
       success: true,
       message: "Shows fetched successfully",
@@ -122,7 +131,7 @@ router.post("/get-all-shows-by-theatre", authMiddleware, async (req, res) => {
 });
 
 // delete show
-router.post("/delete-show", authMiddleware, async (req, res) => {
+router.post("/delete-show", authMiddleware, isAdmin, async (req, res) => {
   try {
     await Show.findByIdAndDelete(req.body.showId);
     res.send({
@@ -142,7 +151,7 @@ router.post("/get-all-theatres-by-movie", authMiddleware, async (req, res) => {
   try {
     const { movie, date } = req.body;
 
-    //find all shows of a movie
+    // find all shows of a movie
     const shows = await Show.find({ movie, date })
       .populate("theatre")
       .sort({ createdAt: -1 });
@@ -151,8 +160,9 @@ router.post("/get-all-theatres-by-movie", authMiddleware, async (req, res) => {
     let uniqueTheatres = [];
     shows.forEach((show) => {
       const theatre = uniqueTheatres.find(
-        (theatre) => theatre._id === show.theatre._id
+        (theatre) => theatre._id == show.theatre._id
       );
+
       if (!theatre) {
         const showsForThisTheatre = shows.filter(
           (showObj) => showObj.theatre._id == show.theatre._id

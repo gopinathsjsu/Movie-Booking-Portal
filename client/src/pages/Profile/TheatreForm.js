@@ -1,59 +1,64 @@
+import { Form, message, Modal } from "antd";
 import React from "react";
-import { Form, Modal, message } from "antd";
-import Button from "../../components/Button";
 import { useDispatch, useSelector } from "react-redux";
-import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
 import { AddTheatre, UpdateTheatre } from "../../apicalls/theatres";
+import Button from "../../components/Button";
+import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
 
-const TheaterForm = ({
-  showTheaterFormModal,
-  setShowTheaterFormModal,
+function TheatreForm({
+  showTheatreFormModal,
+  setShowTheatreFormModal,
   formType,
   setFormType,
-  selectedTheater,
-  setSelectedTheater,
+  selectedTheatre,
+  setSelectedTheatre,
   getData,
-}) => {
-  const {user} = useSelector(state => state.users)
+}) {
+  const { user } = useSelector((state) => state.users);
   const dispatch = useDispatch();
   const onFinish = async (values) => {
     values.owner = user._id;
-    try{
+    try {
       dispatch(ShowLoading());
       let response = null;
       if (formType === "add") {
         response = await AddTheatre(values);
       } else {
-        values.theatreId = selectedTheater._id;
+        values.theatreId = selectedTheatre._id;
         response = await UpdateTheatre(values);
       }
-      console.log(response)
-      if(response.success) {
+
+      if (response.success) {
         message.success(response.message);
-        setShowTheaterFormModal(false);
-        setSelectedTheater(null);
+        setShowTheatreFormModal(false);
+        setSelectedTheatre(null);
         getData();
       } else {
         message.error(response.message);
       }
+       
       dispatch(HideLoading());
     } catch (error) {
       dispatch(HideLoading());
-      message.error(error.message)
+      message.error(error.message);
     }
-  }
+  };
 
   return (
     <Modal
       title={formType === "add" ? "Add Theatre" : "Edit Theatre"}
-      open={showTheaterFormModal}
+      open={showTheatreFormModal}
       onCancel={() => {
-        setShowTheaterFormModal(false);
-        setSelectedTheater(null);
+        setShowTheatreFormModal(false);
+        setSelectedTheatre(null);
       }}
       footer={null}
     >
-      <Form layout="vertical" onFinish={onFinish} initialValues={selectedTheater} >
+      <Form
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={selectedTheatre}
+      >
         <Form.Item
           label="Name"
           name="name"
@@ -61,6 +66,7 @@ const TheaterForm = ({
         >
           <input type="text" />
         </Form.Item>
+
         <Form.Item
           label="Address"
           name="address"
@@ -73,11 +79,12 @@ const TheaterForm = ({
           label="Phone Number"
           name="phone"
           rules={[
-            { required: true, message: "Please input theatre Phone Number!" },
+            { required: true, message: "Please input theatre phone number!" },
           ]}
         >
           <input type="text" />
         </Form.Item>
+
         <Form.Item
           label="Email"
           name="email"
@@ -91,8 +98,8 @@ const TheaterForm = ({
             variant="outlined"
             type="button"
             onClick={() => {
-              setShowTheaterFormModal(false);
-              setSelectedTheater(null);
+              setShowTheatreFormModal(false);
+              setSelectedTheatre(null);
             }}
           />
           <Button title="Save" type="submit" />
@@ -100,6 +107,6 @@ const TheaterForm = ({
       </Form>
     </Modal>
   );
-};
+}
 
-export default TheaterForm;
+export default TheatreForm;

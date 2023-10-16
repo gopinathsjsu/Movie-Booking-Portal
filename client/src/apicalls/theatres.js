@@ -84,7 +84,7 @@ export const GetAllShowsByTheatre = async (payload) => {
     );
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response;
   }
 };
 
@@ -97,7 +97,7 @@ export const DeleteShow = async (payload) => {
     );
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response;
   }
 };
 
@@ -114,12 +114,16 @@ export const GetAllTheatresByMovie = async (payload) => {
   }
 };
 
+
 // get show by id
 export const GetShowById = async (payload) => {
   try {
-    const response = await axiosInstance.post("/api/theatres/get-show-by-id", payload);
+    const response = await axiosInstance.post(
+      "/api/theatres/get-show-by-id",
+      payload
+    );
     return response.data;
   } catch (error) {
-    return error.message
+    return error.response;
   }
 }

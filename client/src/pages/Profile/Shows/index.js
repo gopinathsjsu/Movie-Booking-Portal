@@ -1,8 +1,8 @@
 import { Col, Form, Modal, Row, Table, message } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Button from "../../../components/Button";
-import { useDispatch } from "react-redux";
 import { GetAllMovies } from "../../../apicalls/movies";
+import { useDispatch } from "react-redux";
 import { HideLoading, ShowLoading } from "../../../redux/loadersSlice";
 import {
   AddShow,
@@ -11,11 +11,12 @@ import {
 } from "../../../apicalls/theatres";
 import moment from "moment";
 
-const Shows = ({ openShowsModal, setOpenShowsModal, theatre }) => {
-  const [view, setView] = useState("table");
-  const [shows, setShows] = useState([]);
-  const [movies, setMovies] = useState([]);
+function Shows({ openShowsModal, setOpenShowsModal, theatre }) {
+  const [view, setView] = React.useState("table");
+  const [shows, setShows] = React.useState([]);
+  const [movies, setMovies] = React.useState([]);
   const dispatch = useDispatch();
+
   const getData = async () => {
     try {
       dispatch(ShowLoading());
@@ -66,6 +67,7 @@ const Shows = ({ openShowsModal, setOpenShowsModal, theatre }) => {
     try {
       dispatch(ShowLoading());
       const response = await DeleteShow({ showId: id });
+
       if (response.success) {
         message.success(response.message);
         getData();
@@ -123,12 +125,14 @@ const Shows = ({ openShowsModal, setOpenShowsModal, theatre }) => {
       render: (text, record) => {
         return (
           <div className="flex gap-1 items-center">
-            {record.bookedSeats.length === 0 && <i
-              className="ri-delete-bin-line"
-              onClick={() => {
-                handleDelete(record._id);
-              }}
-            ></i>}
+            {record.bookedSeats.length === 0 && (
+              <i
+                className="ri-delete-bin-line"
+                onClick={() => {
+                  handleDelete(record._id);
+                }}
+              ></i>
+            )}
           </div>
         );
       },
@@ -151,6 +155,7 @@ const Shows = ({ openShowsModal, setOpenShowsModal, theatre }) => {
         Theatre : {theatre.name}
       </h1>
       <hr />
+
       <div className="flex justify-between mt-1 mb-1 items-center">
         <h1 className="text-md uppercase">
           {view === "table" ? "Shows" : "Add Show"}
@@ -158,14 +163,16 @@ const Shows = ({ openShowsModal, setOpenShowsModal, theatre }) => {
         {view === "table" && (
           <Button
             variant="outlined"
-            title="Add Shows"
+            title="Add Show"
             onClick={() => {
               setView("form");
             }}
           />
         )}
       </div>
+
       {view === "table" && <Table columns={columns} dataSource={shows} />}
+
       {view === "form" && (
         <Form layout="vertical" onFinish={handleAddShow}>
           <Row gutter={[16, 16]}>
@@ -190,6 +197,7 @@ const Shows = ({ openShowsModal, setOpenShowsModal, theatre }) => {
                 />
               </Form.Item>
             </Col>
+
             <Col span={8}>
               <Form.Item
                 label="Time"
@@ -199,6 +207,7 @@ const Shows = ({ openShowsModal, setOpenShowsModal, theatre }) => {
                 <input type="time" />
               </Form.Item>
             </Col>
+
             <Col span={8}>
               <Form.Item
                 label="Movie"
@@ -213,6 +222,7 @@ const Shows = ({ openShowsModal, setOpenShowsModal, theatre }) => {
                 </select>
               </Form.Item>
             </Col>
+
             <Col span={8}>
               <Form.Item
                 label="Ticket Price"
@@ -224,6 +234,7 @@ const Shows = ({ openShowsModal, setOpenShowsModal, theatre }) => {
                 <input type="number" />
               </Form.Item>
             </Col>
+
             <Col span={8}>
               <Form.Item
                 label="Total Seats"
@@ -236,6 +247,7 @@ const Shows = ({ openShowsModal, setOpenShowsModal, theatre }) => {
               </Form.Item>
             </Col>
           </Row>
+
           <div className="flex justify-end gap-1">
             <Button
               variant="outlined"
@@ -244,12 +256,12 @@ const Shows = ({ openShowsModal, setOpenShowsModal, theatre }) => {
                 setView("table");
               }}
             />
-            <Button variant="contained" title="Save" type="submit" />
+            <Button variant="contained" title="SAVE" type="submit" />
           </div>
         </Form>
       )}
     </Modal>
   );
-};
+}
 
 export default Shows;

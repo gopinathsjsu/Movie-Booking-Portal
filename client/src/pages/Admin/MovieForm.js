@@ -1,34 +1,40 @@
 import React from "react";
-import { Col, Form, Modal, Row, message } from "antd";
+import { Col, Form, message, Modal, Row } from "antd";
 import Button from "../../components/Button";
 import { useDispatch } from "react-redux";
 import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
 import { AddMovie, UpdateMovie } from "../../apicalls/movies";
 import moment from "moment";
 
-const MoviesForm = ({
+function MovieForm({
   showMovieFormModal,
   setShowMovieFormModal,
   selectedMovie,
   setSelectedMovie,
-  formType,
   getData,
-}) => {
+  formType,
+}) {
   if (selectedMovie) {
     selectedMovie.releaseDate = moment(selectedMovie.releaseDate).format(
       "YYYY-MM-DD"
     );
   }
+
   const dispatch = useDispatch();
   const onFinish = async (values) => {
     try {
       dispatch(ShowLoading());
       let response = null;
+
       if (formType === "add") {
         response = await AddMovie(values);
       } else {
-        response = await UpdateMovie({ ...values, movieId: selectedMovie._id });
+        response = await UpdateMovie({
+          ...values,
+          movieId: selectedMovie._id,
+        });
       }
+
       if (response.success) {
         getData();
         message.success(response.message);
@@ -61,33 +67,37 @@ const MoviesForm = ({
               <input type="text" />
             </Form.Item>
           </Col>
+
           <Col span={24}>
             <Form.Item label="Movie Description" name="description">
               <textarea type="text" />
             </Form.Item>
           </Col>
+
           <Col span={8}>
-            <Form.Item label="Movie Duration" name="duration">
-              <input type="text" />
+            <Form.Item label="Movie Duration (Min)" name="duration">
+              <input type="number" />
             </Form.Item>
           </Col>
+
           <Col span={8}>
             <Form.Item label="Language" name="language">
               <select name="" id="">
                 <option value="">Select Language</option>
-                <option value="Bengali">Bengali</option>
+                <option value="Telugu">Telugu</option>
                 <option value="English">English</option>
                 <option value="Hindi">Hindi</option>
                 <option value="Tamil">Tamil</option>
-                <option value="Telugu">Telugu</option>
               </select>
             </Form.Item>
           </Col>
+
           <Col span={8}>
             <Form.Item label="Movie Release Date" name="releaseDate">
               <input type="date" />
             </Form.Item>
           </Col>
+
           <Col span={8}>
             <Form.Item label="Genre" name="genre">
               <select name="" id="">
@@ -105,6 +115,7 @@ const MoviesForm = ({
             </Form.Item>
           </Col>
         </Row>
+
         <div className="flex justify-end gap-1">
           <Button
             title="Cancel"
@@ -120,6 +131,6 @@ const MoviesForm = ({
       </Form>
     </Modal>
   );
-};
+}
 
-export default MoviesForm;
+export default MovieForm;
