@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { DeleteTheatre, GetAllTheatresByOwner } from "../../apicalls/theatres";
 import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
-import { message, Row, Table, Col } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { Col, Row, Table, message } from "antd";
 import { GetBookingsOfUser } from "../../apicalls/bookings";
-import moment from "moment";
+import moment from 'moment';
 
-function Bookings() {
-  const [bookings = [], setBookings] = useState([]);
+const Bookings = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-
+  const [bookings, setBookings] = useState([]);
   const getData = async () => {
     try {
       dispatch(ShowLoading());
@@ -27,10 +26,9 @@ function Bookings() {
       message.error(error.message);
     }
   };
-
   useEffect(() => {
     getData();
-  }, []);
+  },[]);
   return (
     <div>
       <Row gutter={[16, 16]}>
@@ -38,7 +36,6 @@ function Bookings() {
           <Col span={12}>
             <div className="card p-2 flex justify-between uppercase">
               <div>
-                
                 <h1 className="text-xl">
                   {booking.show.movie.title} ({booking.show.movie.language})
                 </h1>
@@ -73,6 +70,6 @@ function Bookings() {
       </Row>
     </div>
   );
-}
+};
 
 export default Bookings;
