@@ -137,7 +137,7 @@ const BookShow = () => {
         {/* show information */}
         <div className="flex justify-between card p-2 items-center">
           <div>
-            <h1 className="text-sm">{show.theatre.name}</h1>
+            <h1 className="text-x1">{show.theatre.name}</h1>
             <h1 className="text-sm">{show.theatre.address}</h1>
           </div>
           <div>
@@ -146,7 +146,7 @@ const BookShow = () => {
             </h1>
           </div>
           <div>
-            <h1 className="text-sm">
+            <h1 className="text-x1">
               {moment(show.date).format("MMM Do yyyy")} -{" "}
               {moment(show.time, "HH.mm").format("hh:mm A")}
             </h1>
@@ -155,16 +155,7 @@ const BookShow = () => {
         {/* seats */}
         <div className="flex justify-center mt-2">{getSeats()}</div>
 
-        
-
         {selectedSeats.length > 0 && (
-          <>
-          <div className="flex justify-center">
-          <div className="mt-2 flex uppercase card p-2 gap-3">
-            <h1 className="text-sm">Total seats: {selectedSeats.length}</h1>
-            <h1 className="text-sm">Total price: {selectedSeats.length * show.ticketPrice}</h1>
-          </div>
-        </div>
           <div className="mt-2 flex justify-center">
             <StripeCheckout
               token={onToken}
@@ -175,7 +166,6 @@ const BookShow = () => {
               <Button title="Book Now" />
             </StripeCheckout>
           </div>
-          </>
         )}
       </div>
     )
