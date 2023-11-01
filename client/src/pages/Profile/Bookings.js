@@ -12,7 +12,6 @@ const { TabPane } = Tabs;
 function Bookings() {
   const [allBookings, setAllBookings] = useState([]);
   const [recentBookings, setRecentBookings] = useState([]);
-  const [currentAndUpcomingBookings, setCurrentAndUpcomingBookings] = useState([]);
    
   const { user } = useSelector((state) => state.users);
   const [bookings = [], setBookings] = useState([]);
@@ -24,21 +23,13 @@ function Bookings() {
       dispatch(ShowLoading());
       const response = await GetBookingsOfUser();
       if (response.success) {
-        const sortedBookings = response.data.sort((a, b) => 
-        moment(b.show.date).diff(moment(a.show.date))
-      );
-        setAllBookings(sortedBookings);
-        const currentUpcoming = response.data.filter(booking =>
-          moment(booking.show.date).isSameOrAfter(moment())
-        ).sort((a, b) => moment(b.show.date).diff(moment(a.show.date)));
-        setCurrentAndUpcomingBookings(currentUpcoming);
-
-        setBookings(response.data);
-
+        setAllBookings(response.data);
         const filteredBookings = response.data.filter(booking =>
-        moment(booking.show.date).isAfter(moment().subtract(30, 'days'))
+          moment(booking.show.date).isAfter(moment().subtract(30, 'days'))
         );
         setRecentBookings(filteredBookings);
+
+        setBookings(response.data);
       } else {
         message.error(response.message);
       }
@@ -128,23 +119,57 @@ function Bookings() {
   };
   return (
     <div>      
+
     <Tabs defaultActiveKey="1">
-    <TabPane tab="Current & Upcoming Bookings" key="1">
-          <Row gutter={[16, 16]}>
-            {renderBookings(currentAndUpcomingBookings)}
-          </Row>
-    </TabPane>
-    <TabPane tab="Recent Bookings" key="2">
+      <TabPane tab="Recent Bookings" key="1">
         <Row gutter={[16, 16]}>
           {renderBookings(recentBookings)}
         </Row>
       </TabPane>
-      <TabPane tab="All Bookings" key="3">
+      <TabPane tab="All Bookings" key="2">
         <Row gutter={[16, 16]}>
           {renderBookings(allBookings)}
         </Row>
       </TabPane>
     </Tabs>
+      {/* <Row gutter={[16, 16]}>
+        {bookings.map((booking) => (
+          <Col span={12}>
+            <div className="card p-2 flex justify-between uppercase">
+              <div>
+                <h1 className="text-xl">
+                  {booking.show.movie.title} ({booking.show.movie.language})
+                </h1>
+                <div className="divider"></div>
+                <h1 className="text-sm">
+                  {booking.show.theatre.name} ({booking.show.theatre.address})
+                </h1>
+                <h1 className="text-sm">
+                  Date & Time: {moment(booking.show.date).format("MMM Do YYYY")}{" "}
+                  - {moment(booking.show.time, "HH:mm").format("hh:mm A")}
+                </h1>
+                <h1 className="text-sm">
+                  Amount : ₹{" "}
+                  {booking.show.ticketPrice * booking.seats.length +
+                    (user.membershipType === "Premium" ? 0 : 1.5)}
+                </h1>
+                <h1 className="text-sm">Booking ID: {booking._id}</h1>
+              </div>
+
+              <div>
+                <img
+                  src={booking.show.movie.poster}
+                  alt=""
+                  height={100}
+                  width={100}
+                  className="br-1"
+                />
+                <h1 className="text-sm">Seats: {booking.seats.join(", ")}</h1>
+              </div>
+            </div>
+          </Col>
+        ))}
+      </Row> */}
     </div>
   );
 }
