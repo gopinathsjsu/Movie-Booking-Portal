@@ -97,23 +97,4 @@ router.get("/get-bookings", authMiddleware, async (req, res) => {
   }
 });
 
-// Delete a booking
-router.post("/delete-booking", authMiddleware, async (req, res) => {
-  try {
-    console.log(req.body.tId);
-    await Booking.findByIdAndDelete(req.body.tId);
-
-
-    res.send({
-      success: true,
-      message: "Booking deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).send({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-
 module.exports = router;

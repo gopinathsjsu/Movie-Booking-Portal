@@ -9,7 +9,6 @@ const usersRoute = require("./routes/usersRoute");
 const moviesRoute = require("./routes/moviesRoute");
 const theatresRoute = require("./routes/theatresRoute");
 const bookingsRoute = require("./routes/bookingsRoute");
-const deleteBookingRoute = require("./routes/bookingsRoute")
 
 app.use("/api/users", usersRoute);
 app.use("/api/movies", moviesRoute);

@@ -35,15 +35,3 @@ export const GetBookingsOfUser = async () => {
     return error.response.data;
   }
 };
-
-// delete bookings of a user
-export const DeleteBookingOfUser = async (payload) => {
-  try {
-    const tId = payload.transactionId;
-    const response = await axiosInstance.post('/api/bookings/delete-booking', { tId });
-    return response.data;
-  } catch (error) {
-    return error.response.data;
-  }
-};
-

@@ -124,29 +124,6 @@ function BookShow() {
       dispatch(HideLoading());
     }
   };
-// In the section where you display the total price
-  const calculateDiscountedPrice = (show) => {
-    let discount = 0;
-    let showType = "";
-  
-    // Check if the show date is Tuesday or Thursday
-    const dayOfWeek = moment(show.date).format('dddd');
-    if (dayOfWeek === "Tuesday") {
-      discount += 0.5;
-      showType = "Discount Show";
-    }
-  
-    // Check if the show time is before 6:00 PM
-    const showTime = moment(show.time, "HH:mm");
-    if (showTime.isBefore(moment("18:00", "HH:mm"))) {
-      discount += 0.5;
-    }
-  
-    // Apply discount, ensuring it does not exceed 100%
-    discount = Math.min(discount, 1);
-    return show.ticketPrice * (1 - discount);
-  };
-  // till here 
 
   useEffect(() => {
     getData();
@@ -167,11 +144,6 @@ function BookShow() {
               {show.movie.title} ({show.movie.language})
             </h1>
           </div>
-          <div>
-          <h1 className="text-2xl uppercase">
-            Actual Price: {show.ticketPrice}
-          </h1>
-          </div>
 
           <div>
             <h1 className="text-sm">
@@ -191,9 +163,8 @@ function BookShow() {
               <div className="flex uppercase card p-2 gap-3">
                 <h1 className="text-sm"><b>Selected Seats</b> : {selectedSeats.join(" , ")}</h1>
 
-               {/* Discounting prices of the tickets */}
                 <h1 className="text-sm">
-                  <b>Total Price</b> : {selectedSeats.length * calculateDiscountedPrice(show)}
+                  <b>Total Price</b> : {selectedSeats.length * show.ticketPrice}
                 </h1>
               </div>
             </div>
@@ -201,7 +172,7 @@ function BookShow() {
               token={onToken}
               amount={selectedSeats.length * show.ticketPrice * 100}
               billingAddress
-              stripeKey="pk_test_51OHNrnDNaesZhvwBfm44JXUOnnUav9iuzU26U1bZNFC7XynYRwbF5zQWQ5OjFD7wK5xA2hjZFril0nWHrlmCde9C0039iJmSqJ"
+              stripeKey="pk_test_51IYnC0SIR2AbPxU0TMStZwFUoaDZle9yXVygpVIzg36LdpO8aSG8B9j2C0AikiQw2YyCI8n4faFYQI5uG3Nk5EGQ00lCfjXYvZ"
             >
               <Button title="Book Now" />
             </StripeCheckout>

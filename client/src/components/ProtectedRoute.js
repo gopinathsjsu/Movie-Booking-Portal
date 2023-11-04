@@ -46,7 +46,7 @@ function ProtectedRoute({ children }) {
           <div>
             <h1 className="text-2xl text-white cursor-pointer"
               onClick={() => navigate("/")}
-            >AG-WIZ MOVIES</h1>
+            >SHEYMOVIES</h1>
           </div>
 
           <div className="bg-white p-1 flex gap-1">
