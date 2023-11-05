@@ -11,19 +11,19 @@
     background-color: var(--colour-secondary);
 }
 
-.bg-error{
+.bg-error {
     background-color: #ff0000;
 }
 
-.bg-warning{
+.bg-warning {
     background-color: #a2840e;
 }
 
-.bg-white{
+.bg-white {
     background-color: white;
 }
 
-.bg-black{
+.bg-black {
     background-color: black;
 }
 
@@ -35,11 +35,11 @@
     color: var(--colour-secondary);
 }
 
-.text-black{
+.text-black {
     color: #000;
 }
 
-.text-white{
+.text-white {
     color: #fff;
 }
 
@@ -50,4 +50,3 @@
 .border-secondary {
     border-color: var(--colour-secondary);
 }
-

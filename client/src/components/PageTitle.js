@@ -1,10 +1,8 @@
 import React from 'react'
 
-function PageTitle({title}) {
+const PageTitle = ({title}) => {
   return (
-    <h1 className="text-xl uppercase">
-        {title}
-    </h1>
+    <h1 className='text-x1 uppercase'>{title}</h1>
   )
 }
 
