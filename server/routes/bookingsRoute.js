@@ -11,53 +11,28 @@ const {
 // make payment
 router.post("/make-payment", authMiddleware, async (req, res) => {
   try {
-    const {
-      token: token,
-      show: showId,
-      seats: seats,
-      user: user,
-    } = req.body.payload;
+    const { token, amount } = req.body;
 
-    const show = await Show.findById(showId);
-    const ticketPrice = show.ticketPrice; // Assuming Show model has a ticketPrice field
-    const totalCost = seats.length * ticketPrice;
-    let amountToCharge = totalCost;
+    const customer = await stripe.customers.create({
+      email: token.email,
+      source: token.id,
+    });
 
-    if (
-      (user.membershipType === "Premium" ||
-        user.membershipType === "Regular") &&
-      user.rewardPoints
-    ) {
-      amountToCharge = Math.max(0, amountToCharge - user.rewardPoints);
-    }
+    const charge = await stripe.charges.create({
+      amount: amount,
+      currency: "usd",
+      customer: customer.id,
+      receipt_email: token.email,
+      description: "Ticket Booked for Movie",
+    });
 
-    if (amountToCharge > 0) {
-      const customer = await stripe.customers.create({
-        email: token.email,
-        source: token.id,
-      });
+    const transactionId = charge.id;
 
-      const charge = await stripe.charges.create({
-        amount: amountToCharge * 100, // Convert to cents for Stripe
-        currency: "usd",
-        customer: customer.id,
-        receipt_email: token.email,
-        description: "Ticket Booked for Movie",
-      });
-
-      res.send({
-        success: true,
-        message: "Payment successful",
-        data: charge.id,
-      });
-    } else {
-      // No charge needed
-      res.send({
-        success: true,
-        message: "No payment required",
-        data: null,
-      });
-    }
+    res.send({
+      success: true,
+      message: "Payment successful",
+      data: transactionId,
+    });
   } catch (error) {
     res.send({
       success: false,
@@ -69,57 +44,32 @@ router.post("/make-payment", authMiddleware, async (req, res) => {
 // book shows
 router.post("/book-show", authMiddleware, async (req, res) => {
   try {
-    const {
-      seats: seats,
-      show: showId,
-      transactionId: transactionId,
-    } = req.body;
     const user = req.user;
-    const show = await Show.findById(showId);
-    const ticketPrice = show.ticketPrice; // Assuming Show model has a ticketPrice field
-    const totalCost = seats.length * ticketPrice;
-    let amountToPay = totalCost;
-    let usedRewardPoints = 0;
+    let serviceFee = user.membershipType === "Premium" ? 0 : 1.5;
+    let totalAmount = req.body.seats.length * 30 + serviceFee; // Assuming ticket price is 10
 
-    if (
-      user.membershipType === "Premium" ||
-      user.membershipType === "Regular"
-    ) {
-      if (user.rewardPoints >= totalCost) {
-        // Deduct reward points if user is Premium and has enough points
-        usedRewardPoints = totalCost;
-        amountToPay = 0;
-        user.rewardPoints -= totalCost;
-        await user.save();
-      } else {
-        // Partially use reward points if not sufficient
-        usedRewardPoints = user.rewardPoints;
-        amountToPay -= usedRewardPoints;
-        user.rewardPoints = amountToPay;
-        await user.save();
-      }
-    }
-    // Create the booking
-    const newBooking = new Booking({
-      show: showId,
-      user: req.user._id,
-      seats,
-      transactionId, // This can be empty if no Stripe payment was needed
-    });
+    // save booking
+    const newBooking = new Booking(req.body);
     await newBooking.save();
 
+    const show = await Show.findById(req.body.show);
     // update seats
     await Show.findByIdAndUpdate(req.body.show, {
       bookedSeats: [...show.bookedSeats, ...req.body.seats],
     });
 
+    await updateRewardPoints(req.body.user, req.body.seats.length * 30);
+
     res.send({
       success: true,
       message: "Show booked successfully",
-      data: newBooking,
+      data: { newBooking, totalAmount },
     });
   } catch (error) {
-    res.send({ success: false, message: error.message });
+    res.send({
+      success: false,
+      message: error.message,
+    });
   }
 });
 
