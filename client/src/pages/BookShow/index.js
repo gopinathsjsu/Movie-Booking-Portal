@@ -8,8 +8,6 @@ import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
 import StripeCheckout from "react-stripe-checkout";
 import Button from "../../components/Button";
 import { BookShowTickets, MakePayment } from "../../apicalls/bookings";
-import { GetCurrentUser } from "../../apicalls/users";
-import { updateUserData } from "../../redux/usersSlice";
 
 function BookShow() {
   const { user } = useSelector((state) => state.users);
@@ -44,39 +42,36 @@ function BookShow() {
 
     return (
       <div className="flex gap-1 flex-col p-2 card">
-        {Array.from(Array(rows).keys()).map((row, rowIndex) => {
+        {Array.from(Array(rows).keys()).map((seat, index) => {
           return (
-            <div className="flex gap-1 justify-center" key={rowIndex}>
-              {Array.from(Array(columns).keys()).map((column, columnIndex) => {
-                const seatNumber = row * columns + column + 1;
+            <div className="flex gap-1 justify-center">
+              {Array.from(Array(columns).keys()).map((column, index) => {
+                const seatNumber = seat * columns + column + 1;
                 let seatClass = "seat";
 
-                if (selectedSeats.includes(seatNumber)) {
-                  seatClass += " selected-seat";
+                if (selectedSeats.includes(seat * columns + column + 1)) {
+                  seatClass = seatClass + " selected-seat";
                 }
 
-                if (show.bookedSeats.includes(seatNumber)) {
-                  seatClass += " booked-seat";
+                if (show.bookedSeats.includes(seat * columns + column + 1)) {
+                  seatClass = seatClass + " booked-seat";
                 }
 
                 return (
-                  seatNumber <= totalSeats && (
+                  seat * columns + column + 1 <= totalSeats && (
                     <div
                       className={seatClass}
-                      key={columnIndex}
                       onClick={() => {
                         if (selectedSeats.includes(seatNumber)) {
                           setSelectedSeats(
                             selectedSeats.filter((item) => item !== seatNumber)
                           );
-                        } else if (selectedSeats.length < 8) {
-                          setSelectedSeats([...selectedSeats, seatNumber]);
                         } else {
-                          message.warning("You can only select up to 8 seats.");
+                          setSelectedSeats([...selectedSeats, seatNumber]);
                         }
                       }}
                     >
-                      <h1 className="text-sm">{seatNumber}</h1>
+                      <h1 className="text-sm">{seat * columns + column + 1}</h1>
                     </div>
                   )
                 );
@@ -99,10 +94,7 @@ function BookShow() {
       });
       if (response.success) {
         message.success(response.message);
-
-        if (user.membershipType !== "Guest") {
-          navigate("/profile");
-        }
+        navigate("/profile");
       } else {
         message.error(response.message);
       }
@@ -115,41 +107,16 @@ function BookShow() {
 
   const onToken = async (token) => {
     try {
-      await fetchUserData();
+      const totalAmount =
+        selectedSeats.length * show.ticketPrice * 100 +
+        (user.membershipType === "Premium" ? 0 : 150);
       dispatch(ShowLoading());
-      const totalCost = selectedSeats.length * show.ticketPrice * 100;
-      let transactionId = "";
-      if (
-        user.membershipType !== "Premium" ||
-        user.membershipType !== "Regular" ||
-        (100 * user.rewardPoints < totalCost && user.rewardPoints >= 0)
-      ) {
-        // Process Stripe payment if user is not Premium or doesn't have enough points
-
-        const paymentResponse = await MakePayment({
-          token: token,
-          show: params.id,
-          seats: selectedSeats,
-          user: user._id,
-        }); // Stripe expects amount in cents
-        transactionId = paymentResponse.data; // Assuming the payment response contains the transaction ID
-      }
-
-      // Book the show with backend
-      const bookingResponse = await BookShowTickets({
-        show: params.id,
-        seats: selectedSeats,
-        user: user._id,
-        transactionId,
-      });
-
-      if (bookingResponse.success) {
-        message.success(bookingResponse.message);
-        if (user.membershipType !== "Guest") {
-          navigate("/profile");
-        }
+      const response = await MakePayment(token, totalAmount);
+      if (response.success) {
+        message.success(response.message);
+        book(response.data);
       } else {
-        message.error(bookingResponse.message);
+        message.error(response.message);
       }
       dispatch(HideLoading());
     } catch (error) {
@@ -181,33 +148,9 @@ function BookShow() {
   };
   // till here
 
-  const fetchUserData = async () => {
-    try {
-      // Assuming you have an API endpoint to fetch current user data
-      const response = GetCurrentUser();
-      if (response.data.success) {
-        // Update user data in Redux store
-        dispatch(updateUserData(response.data.user));
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
-
-  const findMembership = (user) => {
-    const typeMembership = user.membershipType;
-    if (typeMembership === "Regular" || typeMembership === "Premium") {
-      return "Reward Points: " + user.rewardPoints;
-    } else {
-      return "";
-    }
-  };
-
   useEffect(() => {
-    fetchUserData();
     getData();
   }, []);
-
   return (
     show && (
       <div>
@@ -228,9 +171,6 @@ function BookShow() {
             <h1 className="text-2xl uppercase">
               Actual Price: {show.ticketPrice}
             </h1>
-          </div>
-          <div>
-            <h1 className="text-2xl uppercase">{findMembership(user)}</h1>
           </div>
 
           <div>
