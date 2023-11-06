@@ -78,10 +78,10 @@ function Register() {
 
           <div className="flex flex-col mt-2 gap-1">
             <Button fullWidth title="LOGIN" type="submit" />
-            <button type="button" className="btn" onClick={loginAsGuest}>
+            <button className="btn" onClick={loginAsGuest}>
               Login as Guest
             </button>{" "}
-            {/* Corrected Guest login button */}
+            {/* Guest login button */}
             <Link to="/register" className="text-primary">
               Don't have an account? Register
             </Link>
