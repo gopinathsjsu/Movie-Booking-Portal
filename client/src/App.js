@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-  import Home from "./pages/Home";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import "./stylesheets/alignments.css";
@@ -13,7 +13,6 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import TheatresForMovie from "./pages/TheatresForMovie";
 import BookShow from "./pages/BookShow";
-import PremiumSubscription from './pages/Premium';
 
 function App() {
   const { loading } = useSelector((state) => state.loaders);
@@ -68,7 +67,6 @@ function App() {
           />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/subscribe" element={<PremiumSubscription />} />
         </Routes>
       </BrowserRouter>
     </div>
