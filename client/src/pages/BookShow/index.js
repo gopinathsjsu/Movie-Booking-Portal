@@ -116,13 +116,12 @@ function BookShow() {
     try {
       await fetchUserData();
       dispatch(ShowLoading());
-      const totalCost =
-        calculateDiscountedPrice(show, selectedSeats.length) * 100;
+      const totalCost = selectedSeats.length * show.ticketPrice * 100;
       let transactionId = "";
       if (
-        totalCost > 0 &&
-        (user.membershipType === "Guest" ||
-          (100 * user.rewardPoints < totalCost && user.rewardPoints >= 0))
+        user.membershipType !== "Premium" ||
+        user.membershipType !== "Regular" ||
+        (100 * user.rewardPoints < totalCost && user.rewardPoints >= 0)
       ) {
         // Process Stripe payment if user is not Premium or doesn't have enough points
 
@@ -158,11 +157,7 @@ function BookShow() {
     }
   };
   // In the section where you display the total price
-  const calculateDiscountedPrice = (
-    show,
-    selectedSeatsLength,
-    useRewardPoints = true
-  ) => {
+  const calculateDiscountedPrice = (show) => {
     let discount = 0;
     let showType = "";
 
@@ -181,24 +176,7 @@ function BookShow() {
 
     // Apply discount, ensuring it does not exceed 100%
     discount = Math.min(discount, 1);
-    const finalCost =
-      (show.ticketPrice * (1 - discount) +
-        (user.membershipType === "Premium" ? 0 : 1.5)) *
-      selectedSeatsLength;
-
-    let amountToCharge = finalCost;
-
-    if (useRewardPoints) {
-      if (
-        user.membershipType === "Guest" ||
-        (user.rewardPoints < finalCost && user.rewardPoints >= 0)
-      ) {
-        amountToCharge = Math.max(0, amountToCharge - user.rewardPoints);
-      } else {
-        amountToCharge = 0;
-      }
-    }
-    return amountToCharge;
+    return show.ticketPrice * (1 - discount);
   };
   // till here
 
@@ -282,25 +260,21 @@ function BookShow() {
                 {/* Discounting prices of the tickets */}
                 <h1 className="text-sm">
                   <b>Total Price</b> :{" "}
-                  {calculateDiscountedPrice(show, selectedSeats.length)}
+                  {selectedSeats.length * calculateDiscountedPrice(show)}
                 </h1>
               </div>
             </div>
-
-            {calculateDiscountedPrice(show, selectedSeats.length) > 0 ? (
-              <StripeCheckout
-                token={onToken}
-                amount={
-                  calculateDiscountedPrice(show, selectedSeats.length) * 100
-                }
-                billingAddress
-                stripeKey="pk_test_51OHNrnDNaesZhvwBfm44JXUOnnUav9iuzU26U1bZNFC7XynYRwbF5zQWQ5OjFD7wK5xA2hjZFril0nWHrlmCde9C0039iJmSqJ"
-              >
-                <Button title="Book Now" />
-              </StripeCheckout>
-            ) : (
-              <Button title="Book Now" onClick={() => onToken(null)} />
-            )}
+            <StripeCheckout
+              token={onToken}
+              amount={
+                selectedSeats.length * show.ticketPrice * 100 +
+                (user.membershipType === "Premium" ? 0 : 150)
+              }
+              billingAddress
+              stripeKey="pk_test_51OHNrnDNaesZhvwBfm44JXUOnnUav9iuzU26U1bZNFC7XynYRwbF5zQWQ5OjFD7wK5xA2hjZFril0nWHrlmCde9C0039iJmSqJ"
+            >
+              <Button title="Book Now" />
+            </StripeCheckout>
           </div>
         )}
       </div>

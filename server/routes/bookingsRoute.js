@@ -81,7 +81,10 @@ router.post("/book-show", authMiddleware, async (req, res) => {
     let amountToPay = totalCost;
     let usedRewardPoints = 0;
 
-    if (user.membershipType !== "Guest") {
+    if (
+      user.membershipType === "Premium" ||
+      user.membershipType === "Regular"
+    ) {
       if (user.rewardPoints >= totalCost) {
         // Deduct reward points if user is Premium and has enough points
         usedRewardPoints = totalCost;
@@ -159,6 +162,7 @@ router.post("/delete-booking", authMiddleware, async (req, res) => {
   try {
     console.log(req.body.tId);
     await Booking.findByIdAndDelete(req.body.tId);
+
 
     res.send({
       success: true,
