@@ -15,7 +15,6 @@ function BookShow() {
   const { user } = useSelector((state) => state.users);
   const [show, setShow] = React.useState(null);
   const [selectedSeats, setSelectedSeats] = React.useState([]);
-  const [useRewardPoints, setUseRewardPoints] = React.useState(false);
   const params = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -45,39 +44,36 @@ function BookShow() {
 
     return (
       <div className="flex gap-1 flex-col p-2 card">
-        {Array.from(Array(rows).keys()).map((row, rowIndex) => {
+        {Array.from(Array(rows).keys()).map((seat, index) => {
           return (
-            <div className="flex gap-1 justify-center" key={rowIndex}>
-              {Array.from(Array(columns).keys()).map((column, columnIndex) => {
-                const seatNumber = row * columns + column + 1;
+            <div className="flex gap-1 justify-center">
+              {Array.from(Array(columns).keys()).map((column, index) => {
+                const seatNumber = seat * columns + column + 1;
                 let seatClass = "seat";
 
-                if (selectedSeats.includes(seatNumber)) {
-                  seatClass += " selected-seat";
+                if (selectedSeats.includes(seat * columns + column + 1)) {
+                  seatClass = seatClass + " selected-seat";
                 }
 
-                if (show.bookedSeats.includes(seatNumber)) {
-                  seatClass += " booked-seat";
+                if (show.bookedSeats.includes(seat * columns + column + 1)) {
+                  seatClass = seatClass + " booked-seat";
                 }
 
                 return (
-                  seatNumber <= totalSeats && (
+                  seat * columns + column + 1 <= totalSeats && (
                     <div
                       className={seatClass}
-                      key={columnIndex}
                       onClick={() => {
                         if (selectedSeats.includes(seatNumber)) {
                           setSelectedSeats(
                             selectedSeats.filter((item) => item !== seatNumber)
                           );
-                        } else if (selectedSeats.length < 8) {
-                          setSelectedSeats([...selectedSeats, seatNumber]);
                         } else {
-                          message.warning("You can only select up to 8 seats.");
+                          setSelectedSeats([...selectedSeats, seatNumber]);
                         }
                       }}
                     >
-                      <h1 className="text-sm">{seatNumber}</h1>
+                      <h1 className="text-sm">{seat * columns + column + 1}</h1>
                     </div>
                   )
                 );
@@ -97,11 +93,12 @@ function BookShow() {
         seats: selectedSeats,
         transactionId,
         user: user._id,
-        useRewardPoints: useRewardPoints,
       });
       if (response.success) {
         message.success(response.message);
-        if (user.membershipType !== "Guest") {
+        if (user.membershipType === "Guest") {
+          navigate("/");
+        } else {
           navigate("/profile");
         }
       } else {
@@ -114,18 +111,36 @@ function BookShow() {
     }
   };
 
+  // const onToken = async (token) => {
+  //   try {
+  //     const totalAmount =
+  //       selectedSeats.length * show.ticketPrice * 100 +
+  //       (user.membershipType === "Premium" ? 0 : 150);
+  //     dispatch(ShowLoading());
+  //     const response = await MakePayment(token, totalAmount);
+  //     if (response.success) {
+  //       message.success(response.message);
+  //       book(response.data);
+  //     } else {
+  //       message.error(response.message);
+  //     }
+  //     dispatch(HideLoading());
+  //   } catch (error) {
+  //     message.error(error.message);
+  //     dispatch(HideLoading());
+  //   }
+  // };
+
   const onToken = async (token) => {
     try {
       await fetchUserData();
       dispatch(ShowLoading());
-      const totalCost =
-        calculateDiscountedPrice(show, selectedSeats.length, useRewardPoints) *
-        100;
+      const totalCost = selectedSeats.length * show.ticketPrice * 100;
       let transactionId = "";
       if (
-        totalCost > 0 &&
-        (user.membershipType === "Guest" ||
-          (totalCost > 0 && user.rewardPoints >= 0))
+        user.membershipType !== "Premium" ||
+        user.membershipType !== "Regular" ||
+        (100 * user.rewardPoints < totalCost && user.rewardPoints >= 0)
       ) {
         // Process Stripe payment if user is not Premium or doesn't have enough points
 
@@ -134,7 +149,6 @@ function BookShow() {
           show: params.id,
           seats: selectedSeats,
           user: user._id,
-          useRewardPoints: useRewardPoints,
         }); // Stripe expects amount in cents
         transactionId = paymentResponse.data; // Assuming the payment response contains the transaction ID
       }
@@ -144,13 +158,16 @@ function BookShow() {
         show: params.id,
         seats: selectedSeats,
         user: user._id,
-        transactionId: transactionId,
-        useRewardPoints: useRewardPoints,
+        transactionId,
       });
 
       if (bookingResponse.success) {
         message.success(bookingResponse.message);
-        navigate("/");
+        if (user.membershipType === "Guest") {
+          navigate("/");
+        } else {
+          navigate("/profile");
+        }
       } else {
         message.error(bookingResponse.message);
       }
@@ -161,11 +178,7 @@ function BookShow() {
     }
   };
   // In the section where you display the total price
-  const calculateDiscountedPrice = (
-    show,
-    selectedSeatsLength,
-    useRewardPoints
-  ) => {
+  const calculateDiscountedPrice = (show) => {
     let discount = 0;
     let showType = "";
 
@@ -184,24 +197,7 @@ function BookShow() {
 
     // Apply discount, ensuring it does not exceed 100%
     discount = Math.min(discount, 1);
-    const finalCost =
-      (show.ticketPrice * (1 - discount) +
-        (user.membershipType === "Premium" ? 0 : 1.5)) *
-      selectedSeatsLength;
-
-    let amountToCharge = finalCost;
-
-    if (useRewardPoints) {
-      if (
-        user.membershipType === "Guest" ||
-        (user.rewardPoints < finalCost && user.rewardPoints >= 0)
-      ) {
-        amountToCharge = Math.max(0, amountToCharge - user.rewardPoints);
-      } else {
-        amountToCharge = 0;
-      }
-    }
-    return amountToCharge;
+    return show.ticketPrice * (1 - discount);
   };
   // till here
 
@@ -218,25 +214,10 @@ function BookShow() {
     }
   };
 
-  const findMembership = (user) => {
-    try {
-      const typeMembership = user.membershipType;
-      if (typeMembership === "Regular" || typeMembership === "Premium") {
-        return "Reward Points: " + user.rewardPoints;
-      } else {
-        return "";
-      }
-    } catch (error) {
-      message.error(error.message);
-      console.error("Error fetching user data:", error);
-    }
-  };
-
   useEffect(() => {
     fetchUserData();
     getData();
   }, []);
-
   return (
     show && (
       <div>
@@ -257,9 +238,6 @@ function BookShow() {
             <h1 className="text-2xl uppercase">
               Actual Price: {show.ticketPrice}
             </h1>
-          </div>
-          <div>
-            <h1 className="text-2xl uppercase">{findMembership(user)}</h1>
           </div>
 
           <div>
@@ -285,47 +263,21 @@ function BookShow() {
                 {/* Discounting prices of the tickets */}
                 <h1 className="text-sm">
                   <b>Total Price</b> :{" "}
-                  {calculateDiscountedPrice(
-                    show,
-                    selectedSeats.length,
-                    useRewardPoints
-                  )}
+                  {selectedSeats.length * calculateDiscountedPrice(show)}
                 </h1>
               </div>
             </div>
-            {user.membershipType !== "Guest" && (
-              <div className="flex items-center gap-2 mb-2">
-                <input
-                  type="checkbox"
-                  checked={useRewardPoints}
-                  onChange={(e) => setUseRewardPoints(e.target.checked)}
-                />
-                <label>Use Reward Points</label>
-              </div>
-            )}
-
-            {calculateDiscountedPrice(
-              show,
-              selectedSeats.length,
-              useRewardPoints
-            ) > 0 ? (
-              <StripeCheckout
-                token={onToken}
-                amount={
-                  calculateDiscountedPrice(
-                    show,
-                    selectedSeats.length,
-                    useRewardPoints
-                  ) * 100
-                }
-                billingAddress
-                stripeKey="pk_test_51OHNrnDNaesZhvwBfm44JXUOnnUav9iuzU26U1bZNFC7XynYRwbF5zQWQ5OjFD7wK5xA2hjZFril0nWHrlmCde9C0039iJmSqJ"
-              >
-                <Button title="Book Now" />
-              </StripeCheckout>
-            ) : (
-              <Button title="Book Now" onClick={() => onToken(null)} />
-            )}
+            <StripeCheckout
+              token={onToken}
+              amount={
+                selectedSeats.length * show.ticketPrice * 100 +
+                (user.membershipType === "Premium" ? 0 : 150)
+              }
+              billingAddress
+              stripeKey="pk_test_51OHNrnDNaesZhvwBfm44JXUOnnUav9iuzU26U1bZNFC7XynYRwbF5zQWQ5OjFD7wK5xA2hjZFril0nWHrlmCde9C0039iJmSqJ"
+            >
+              <Button title="Book Now" />
+            </StripeCheckout>
           </div>
         )}
       </div>
