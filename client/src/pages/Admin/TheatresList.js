@@ -1,26 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { GetAllTheatres, UpdateTheatre, DeleteTheatre } from "../../apicalls/theatres";
+import { GetAllTheatres, UpdateTheatre } from "../../apicalls/theatres";
 import { useDispatch, useSelector } from "react-redux";
 import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
 import { message, Table } from "antd";
-import Button from "../../components/Button";
-
-import TheatreForm from "../Profile/TheatreForm";
-import Shows from "../Profile/Shows";
-import Analytics from "../Profile/Analytics";
 
 function TheatresList() {
   const [theatres = [], setTheatres] = useState([]);
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.users);
-  const [showTheatreFormModal = false, setShowTheatreFormModal] =
-    useState(false);
-    const [selectedTheatre = null, setSelectedTheatre] = useState(null);
-    const [formType = "add", setFormType] = useState("add");
-    const [openShowsModal = false, setOpenShowsModal] = useState(false);
-    const [openAnalyticsModal = false, setOpenAnalyticsModal] = useState(false);
 
-    const getData = async () => {
+  const getData = async () => {
     try {
       dispatch(ShowLoading());
       const response = await GetAllTheatres();
@@ -36,10 +24,14 @@ function TheatresList() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleStatusChange = async (theatre) => {
     try {
       dispatch(ShowLoading());
-      const response = await DeleteTheatre({ theatreId: id });
+      const response = await UpdateTheatre({
+        theatreId: theatre._id,
+        ...theatre,
+        isActive: !theatre.isActive,
+      });
       if (response.success) {
         message.success(response.message);
         getData();
@@ -71,53 +63,49 @@ function TheatresList() {
       dataIndex: "email",
     },
     {
+      title: "Owner",
+      dataIndex: "owner",
+      render: (text, record) => {
+        return record.owner.name;
+      },
+    },
+    {
+      title: "Status",
+      dataIndex: "isActive",
+      render: (text, record) => {
+        if (text) {
+          return "Approved";
+        } else {
+          return "Pending / Blocked";
+        }
+      },
+    },
+    {
       title: "Action",
       dataIndex: "action",
       render: (text, record) => {
         return (
-          <div className="flex gap-1 items-center">
-            <i
-              className="ri-delete-bin-line"
-              onClick={() => {
-                handleDelete(record._id);
-              }}
-            ></i>
-            <i
-              className="ri-pencil-line"
-              onClick={() => {
-                setFormType("edit");
-                setSelectedTheatre(record);
-                setShowTheatreFormModal(true);
-              }}
-            ></i>
-
-            {(
+          <div className="flex gap-1">
+            {record.isActive && (
               <span
                 className="underline"
-                onClick={() => {
-                  setSelectedTheatre(record);
-                  setOpenShowsModal(true);
-                }}
+                onClick={() => handleStatusChange(record)}
               >
-                Shows
+                Block
               </span>
             )}
-            {(
+            {!record.isActive && (
               <span
                 className="underline"
-                onClick={() => {
-                  setSelectedTheatre(record);
-                  setOpenAnalyticsModal(true);
-                }}
+                onClick={() => handleStatusChange(record)}
               >
-                Analytics
+                Approve
               </span>
             )}
-                      </div>
+          </div>
         );
       },
     },
-
   ];
 
   useEffect(() => {
@@ -125,46 +113,7 @@ function TheatresList() {
   }, []);
   return (
     <div>
-      <div className="flex justify-end mb-1">
-        <Button
-          variant="outlined"
-          title="Add Theatre"
-          onClick={() => {
-            setFormType("add");
-            setShowTheatreFormModal(true);
-          }}
-        />
-      </div>
-
       <Table columns={columns} dataSource={theatres} />
-
-      {showTheatreFormModal && (
-        <TheatreForm
-          showTheatreFormModal={showTheatreFormModal}
-          setShowTheatreFormModal={setShowTheatreFormModal}
-          formType={formType}
-          setFormType={setFormType}
-          selectedTheatre={selectedTheatre}
-          setSelectedTheatre={setSelectedTheatre}
-          getData={getData}
-        />
-      )}
-
-      {openShowsModal && (
-        <Shows
-          openShowsModal={openShowsModal}
-          setOpenShowsModal={setOpenShowsModal}
-          theatre={selectedTheatre}
-        />
-      )}
-
-      {openAnalyticsModal && (
-        <Analytics
-          openAnalyticsModal={openAnalyticsModal}
-          setOpenAnalyticsModal={setOpenAnalyticsModal}
-          theatre={selectedTheatre}
-        />
-      )}
     </div>
   );
 }

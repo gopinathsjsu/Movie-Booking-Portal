@@ -11,9 +11,9 @@ function Register() {
   const dispatch = useDispatch();
   const onFinish = async (values) => {
     try {
-      dispatch(ShowLoading());
+      dispatch(ShowLoading())
       const response = await LoginUser(values);
-      dispatch(HideLoading());
+      dispatch(HideLoading())
       if (response.success) {
         message.success(response.message);
         localStorage.setItem("token", response.data);
@@ -22,29 +22,7 @@ function Register() {
         message.error(response.message);
       }
     } catch (error) {
-      dispatch(HideLoading());
-      message.error(error.message);
-    }
-  };
-
-  const loginAsGuest = async () => {
-    try {
-      dispatch(ShowLoading());
-      const guestCredentials = {
-        email: "guest@gg.com",
-        password: "12345",
-      };
-      const response = await LoginUser(guestCredentials);
-      dispatch(HideLoading());
-      if (response.success) {
-        message.success(response.message);
-        localStorage.setItem("token", response.data);
-        window.location.href = "/";
-      } else {
-        message.error(response.message);
-      }
-    } catch (error) {
-      dispatch(HideLoading());
+      dispatch(HideLoading())
       message.error(error.message);
     }
   };
@@ -58,7 +36,7 @@ function Register() {
   return (
     <div className="flex justify-center h-screen items-center bg-primary">
       <div className="card p-3 w-400">
-        <h1 className="text-xl mb-1">AG-WIZ MOVIES - LOGIN</h1>
+        <h1 className="text-xl mb-1">SHEYMOVIES - LOGIN</h1>
         <hr />
         <Form layout="vertical" className="mt-1" onFinish={onFinish}>
           <Form.Item
@@ -78,11 +56,8 @@ function Register() {
 
           <div className="flex flex-col mt-2 gap-1">
             <Button fullWidth title="LOGIN" type="submit" />
-            <button type="button" className="btn" onClick={loginAsGuest}>
-              Login as Guest
-            </button>{" "}
-            {/* Corrected Guest login button */}
             <Link to="/register" className="text-primary">
+              {" "}
               Don't have an account? Register
             </Link>
           </div>
