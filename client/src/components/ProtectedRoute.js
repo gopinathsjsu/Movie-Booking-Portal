@@ -59,7 +59,7 @@ function ProtectedRoute({ children }) {
               onClick={() => {
                 if (user.isAdmin) {
                   navigate("/admin");
-                } else if (user.membershipType !== "Guest") {
+                } else {
                   navigate("/profile");
                 }
               }}
