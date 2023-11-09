@@ -1,11 +1,10 @@
 const router = require("express").Router();
 const authMiddleware = require("../middlewares/authMiddleware");
-const isAdmin = require("../middlewares/isAdminMiddleware");
 const Theatre = require("../models/theatreModel");
 const Show = require("../models/showModel");
 
 // add theatre
-router.post("/add-theatre", authMiddleware, isAdmin, async (req, res) => {
+router.post("/add-theatre", authMiddleware, async (req, res) => {
   try {
     const newTheatre = new Theatre(req.body);
     await newTheatre.save();
@@ -24,9 +23,7 @@ router.post("/add-theatre", authMiddleware, isAdmin, async (req, res) => {
 // get all theatres
 router.get("/get-all-theatres", authMiddleware, async (req, res) => {
   try {
-    const theatres = await Theatre.find()
-      .populate("owner")
-      .sort({ createdAt: -1 });
+    const theatres = await Theatre.find().populate('owner').sort({ createdAt: -1 });
     res.send({
       success: true,
       message: "Theatres fetched successfully",
@@ -60,7 +57,7 @@ router.post("/get-all-theatres-by-owner", authMiddleware, async (req, res) => {
 });
 
 // update theatre
-router.post("/update-theatre", authMiddleware, isAdmin, async (req, res) => {
+router.post("/update-theatre", authMiddleware, async (req, res) => {
   try {
     await Theatre.findByIdAndUpdate(req.body.theatreId, req.body);
     res.send({
@@ -76,7 +73,7 @@ router.post("/update-theatre", authMiddleware, isAdmin, async (req, res) => {
 });
 
 // delete theatre
-router.post("/delete-theatre", authMiddleware, isAdmin, async (req, res) => {
+router.post("/delete-theatre", authMiddleware, async (req, res) => {
   try {
     await Theatre.findByIdAndDelete(req.body.theatreId);
     res.send({
@@ -92,7 +89,7 @@ router.post("/delete-theatre", authMiddleware, isAdmin, async (req, res) => {
 });
 
 // add show
-router.post("/add-show", authMiddleware, isAdmin, async (req, res) => {
+router.post("/add-show", authMiddleware, async (req, res) => {
   try {
     const newShow = new Show(req.body);
     await newShow.save();
@@ -131,7 +128,7 @@ router.post("/get-all-shows-by-theatre", authMiddleware, async (req, res) => {
 });
 
 // delete show
-router.post("/delete-show", authMiddleware, isAdmin, async (req, res) => {
+router.post("/delete-show", authMiddleware, async (req, res) => {
   try {
     await Show.findByIdAndDelete(req.body.showId);
     res.send({
