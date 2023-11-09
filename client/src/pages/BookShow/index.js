@@ -8,8 +8,6 @@ import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
 import StripeCheckout from "react-stripe-checkout";
 import Button from "../../components/Button";
 import { BookShowTickets, MakePayment } from "../../apicalls/bookings";
-import { GetCurrentUser } from "../../apicalls/users";
-import { updateUserData } from "../../redux/usersSlice";
 
 function BookShow() {
   const { user } = useSelector((state) => state.users);
@@ -107,61 +105,18 @@ function BookShow() {
     }
   };
 
-  // const onToken = async (token) => {
-  //   try {
-  //     const totalAmount =
-  //       selectedSeats.length * show.ticketPrice * 100 +
-  //       (user.membershipType === "Premium" ? 0 : 150);
-  //     dispatch(ShowLoading());
-  //     const response = await MakePayment(token, totalAmount);
-  //     if (response.success) {
-  //       message.success(response.message);
-  //       book(response.data);
-  //     } else {
-  //       message.error(response.message);
-  //     }
-  //     dispatch(HideLoading());
-  //   } catch (error) {
-  //     message.error(error.message);
-  //     dispatch(HideLoading());
-  //   }
-  // };
-
   const onToken = async (token) => {
     try {
-      await fetchUserData();
       dispatch(ShowLoading());
-      const totalCost = selectedSeats.length * show.ticketPrice * 100;
-      let transactionId = "";
-      if (
-        user.membershipType !== "Premium" ||
-        user.membershipType !== "Regular" ||
-        (100 * user.rewardPoints < totalCost && user.rewardPoints >= 0)
-      ) {
-        // Process Stripe payment if user is not Premium or doesn't have enough points
-
-        const paymentResponse = await MakePayment({
-          token: token,
-          show: params.id,
-          seats: selectedSeats,
-          user: user._id,
-        }); // Stripe expects amount in cents
-        transactionId = paymentResponse.data; // Assuming the payment response contains the transaction ID
-      }
-
-      // Book the show with backend
-      const bookingResponse = await BookShowTickets({
-        show: params.id,
-        seats: selectedSeats,
-        user: user._id,
-        transactionId,
-      });
-
-      if (bookingResponse.success) {
-        message.success(bookingResponse.message);
-        navigate("/profile");
+      const response = await MakePayment(
+        token,
+        selectedSeats.length * show.ticketPrice * 100
+      );
+      if (response.success) {
+        message.success(response.message);
+        book(response.data);
       } else {
-        message.error(bookingResponse.message);
+        message.error(response.message);
       }
       dispatch(HideLoading());
     } catch (error) {
@@ -169,45 +124,31 @@ function BookShow() {
       dispatch(HideLoading());
     }
   };
-  // In the section where you display the total price
+// In the section where you display the total price
   const calculateDiscountedPrice = (show) => {
     let discount = 0;
     let showType = "";
-
+  
     // Check if the show date is Tuesday or Thursday
-    const dayOfWeek = moment(show.date).format("dddd");
+    const dayOfWeek = moment(show.date).format('dddd');
     if (dayOfWeek === "Tuesday") {
       discount += 0.5;
       showType = "Discount Show";
     }
-
+  
     // Check if the show time is before 6:00 PM
     const showTime = moment(show.time, "HH:mm");
     if (showTime.isBefore(moment("18:00", "HH:mm"))) {
       discount += 0.5;
     }
-
+  
     // Apply discount, ensuring it does not exceed 100%
     discount = Math.min(discount, 1);
     return show.ticketPrice * (1 - discount);
   };
-  // till here
-
-  const fetchUserData = async () => {
-    try {
-      // Assuming you have an API endpoint to fetch current user data
-      const response = GetCurrentUser();
-      if (response.data.success) {
-        // Update user data in Redux store
-        dispatch(updateUserData(response.data.user));
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
+  // till here 
 
   useEffect(() => {
-    fetchUserData();
     getData();
   }, []);
   return (
@@ -227,9 +168,9 @@ function BookShow() {
             </h1>
           </div>
           <div>
-            <h1 className="text-2xl uppercase">
-              Actual Price: {show.ticketPrice}
-            </h1>
+          <h1 className="text-2xl uppercase">
+            Actual Price: {show.ticketPrice}
+          </h1>
           </div>
 
           <div>
@@ -252,19 +193,15 @@ function BookShow() {
                   <b>Selected Seats</b> : {selectedSeats.join(" , ")}
                 </h1>
 
-                {/* Discounting prices of the tickets */}
+               {/* Discounting prices of the tickets */}
                 <h1 className="text-sm">
-                  <b>Total Price</b> :{" "}
-                  {selectedSeats.length * calculateDiscountedPrice(show)}
+                  <b>Total Price</b> : {selectedSeats.length * calculateDiscountedPrice(show)}
                 </h1>
               </div>
             </div>
             <StripeCheckout
               token={onToken}
-              amount={
-                selectedSeats.length * show.ticketPrice * 100 +
-                (user.membershipType === "Premium" ? 0 : 150)
-              }
+              amount={selectedSeats.length * show.ticketPrice * 100}
               billingAddress
               stripeKey="pk_test_51OHNrnDNaesZhvwBfm44JXUOnnUav9iuzU26U1bZNFC7XynYRwbF5zQWQ5OjFD7wK5xA2hjZFril0nWHrlmCde9C0039iJmSqJ"
             >

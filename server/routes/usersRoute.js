@@ -96,15 +96,4 @@ router.get("/get-current-user", authMiddleware, async (req, res) => {
   }
 });
 
-router.put("/upgrade-membership", async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    user.membershipType = "Premium";
-    await user.save();
-    res.status(200).send({ message: "Membership upgraded to Premium" });
-  } catch (error) {
-    res.status(500).send({ message: "Error upgrading membership" });
-  }
-});
-
 module.exports = router;
