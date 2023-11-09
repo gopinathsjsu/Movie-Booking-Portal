@@ -1,4 +1,4 @@
-Current:29. Shows Intro
+Current Lecture:6. Login Screen
 
 Main Branch: development
 CurrentWorking Branch:
