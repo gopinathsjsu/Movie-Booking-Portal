@@ -2,7 +2,6 @@ const router = require('express').Router();
 const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const authMiddleware = require('../middlewares/authMiddleware');
 
 // register a new user
 router.post('/register', async (req, res) => {
@@ -19,7 +18,7 @@ router.post('/register', async (req, res) => {
         }
 
         // hash the password 
-        const salt = await bcrypt.genSalt(10);
+        const salt = await bcrypt.getSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
         req.body.password = hashedPassword;
 
@@ -67,23 +66,6 @@ router.post('/login', async (req, res) => {
         });
         res.send({ success: true, message: "User logged in successfully", data: token});
     }catch(error) {
-        res.send({
-            success: false,
-            message: error.message,
-        });
-    }
-})
-
-// get user details by id
-router.get('/get-current-user', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.body.userId).select('-password');
-        res.send({
-            success: true,
-            message: "User details fetched successfully",
-            data: user,
-        })
-    } catch (error) {
         res.send({
             success: false,
             message: error.message,
