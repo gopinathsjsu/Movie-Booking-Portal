@@ -13,7 +13,7 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import TheatresForMovie from "./pages/TheatresForMovie";
 import BookShow from "./pages/BookShow";
-import GetPremium from './pages/Premium';
+import PremiumSubscription from './pages/Premium';
 
 function App() {
   const { loading } = useSelector((state) => state.loaders);
@@ -50,14 +50,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route
-            path="/premium"
-            element={
-              <ProtectedRoute>
-                <GetPremium />
-              </ProtectedRoute>
-            }
-          />          
           <Route
             path="/profile"
             element={
@@ -76,7 +68,7 @@ function App() {
           />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/premium" element={<GetPremium />} />
+          <Route path="/subscribe" element={<PremiumSubscription />} />
         </Routes>
       </BrowserRouter>
     </div>
