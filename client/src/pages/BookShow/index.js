@@ -15,6 +15,7 @@ function BookShow() {
   const { user } = useSelector((state) => state.users);
   const [show, setShow] = React.useState(null);
   const [selectedSeats, setSelectedSeats] = React.useState([]);
+  const [useRewardPoints, setUseRewardPoints] = React.useState(false);
   const params = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -96,10 +97,10 @@ function BookShow() {
         seats: selectedSeats,
         transactionId,
         user: user._id,
+        useRewardPoints: useRewardPoints,
       });
       if (response.success) {
         message.success(response.message);
-
         if (user.membershipType !== "Guest") {
           navigate("/profile");
         }
@@ -117,12 +118,14 @@ function BookShow() {
     try {
       await fetchUserData();
       dispatch(ShowLoading());
-      const totalCost = selectedSeats.length * show.ticketPrice * 100;
+      const totalCost =
+        calculateDiscountedPrice(show, selectedSeats.length, useRewardPoints) *
+        100;
       let transactionId = "";
       if (
-        user.membershipType !== "Premium" ||
-        user.membershipType !== "Regular" ||
-        (100 * user.rewardPoints < totalCost && user.rewardPoints >= 0)
+        totalCost > 0 &&
+        (user.membershipType === "Guest" ||
+          (totalCost > 0 && user.rewardPoints >= 0))
       ) {
         // Process Stripe payment if user is not Premium or doesn't have enough points
 
@@ -131,6 +134,7 @@ function BookShow() {
           show: params.id,
           seats: selectedSeats,
           user: user._id,
+          useRewardPoints: useRewardPoints,
         }); // Stripe expects amount in cents
         transactionId = paymentResponse.data; // Assuming the payment response contains the transaction ID
       }
@@ -140,14 +144,13 @@ function BookShow() {
         show: params.id,
         seats: selectedSeats,
         user: user._id,
-        transactionId,
+        transactionId: transactionId,
+        useRewardPoints: useRewardPoints,
       });
 
       if (bookingResponse.success) {
         message.success(bookingResponse.message);
-        if (user.membershipType !== "Guest") {
-          navigate("/profile");
-        }
+        navigate("/");
       } else {
         message.error(bookingResponse.message);
       }
@@ -158,7 +161,11 @@ function BookShow() {
     }
   };
   // In the section where you display the total price
-  const calculateDiscountedPrice = (show) => {
+  const calculateDiscountedPrice = (
+    show,
+    selectedSeatsLength,
+    useRewardPoints
+  ) => {
     let discount = 0;
     let showType = "";
 
@@ -177,7 +184,24 @@ function BookShow() {
 
     // Apply discount, ensuring it does not exceed 100%
     discount = Math.min(discount, 1);
-    return show.ticketPrice * (1 - discount);
+    const finalCost =
+      (show.ticketPrice * (1 - discount) +
+        (user.membershipType === "Premium" ? 0 : 1.5)) *
+      selectedSeatsLength;
+
+    let amountToCharge = finalCost;
+
+    if (useRewardPoints) {
+      if (
+        user.membershipType === "Guest" ||
+        (user.rewardPoints < finalCost && user.rewardPoints >= 0)
+      ) {
+        amountToCharge = Math.max(0, amountToCharge - user.rewardPoints);
+      } else {
+        amountToCharge = 0;
+      }
+    }
+    return amountToCharge;
   };
   // till here
 
@@ -195,11 +219,16 @@ function BookShow() {
   };
 
   const findMembership = (user) => {
-    const typeMembership = user.membershipType;
-    if (typeMembership === "Regular" || typeMembership === "Premium") {
-      return "Reward Points: " + user.rewardPoints;
-    } else {
-      return "";
+    try {
+      const typeMembership = user.membershipType;
+      if (typeMembership === "Regular" || typeMembership === "Premium") {
+        return "Reward Points: " + user.rewardPoints;
+      } else {
+        return "";
+      }
+    } catch (error) {
+      message.error(error.message);
+      console.error("Error fetching user data:", error);
     }
   };
 
@@ -256,21 +285,47 @@ function BookShow() {
                 {/* Discounting prices of the tickets */}
                 <h1 className="text-sm">
                   <b>Total Price</b> :{" "}
-                  {selectedSeats.length * calculateDiscountedPrice(show)}
+                  {calculateDiscountedPrice(
+                    show,
+                    selectedSeats.length,
+                    useRewardPoints
+                  )}
                 </h1>
               </div>
             </div>
-            <StripeCheckout
-              token={onToken}
-              amount={
-                selectedSeats.length * show.ticketPrice * 100 +
-                (user.membershipType === "Premium" ? 0 : 150)
-              }
-              billingAddress
-              stripeKey="pk_test_51OHNrnDNaesZhvwBfm44JXUOnnUav9iuzU26U1bZNFC7XynYRwbF5zQWQ5OjFD7wK5xA2hjZFril0nWHrlmCde9C0039iJmSqJ"
-            >
-              <Button title="Book Now" />
-            </StripeCheckout>
+            {user.membershipType !== "Guest" && (
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="checkbox"
+                  checked={useRewardPoints}
+                  onChange={(e) => setUseRewardPoints(e.target.checked)}
+                />
+                <label>Use Reward Points</label>
+              </div>
+            )}
+
+            {calculateDiscountedPrice(
+              show,
+              selectedSeats.length,
+              useRewardPoints
+            ) > 0 ? (
+              <StripeCheckout
+                token={onToken}
+                amount={
+                  calculateDiscountedPrice(
+                    show,
+                    selectedSeats.length,
+                    useRewardPoints
+                  ) * 100
+                }
+                billingAddress
+                stripeKey="pk_test_51OHNrnDNaesZhvwBfm44JXUOnnUav9iuzU26U1bZNFC7XynYRwbF5zQWQ5OjFD7wK5xA2hjZFril0nWHrlmCde9C0039iJmSqJ"
+              >
+                <Button title="Book Now" />
+              </StripeCheckout>
+            ) : (
+              <Button title="Book Now" onClick={() => onToken(null)} />
+            )}
           </div>
         )}
       </div>

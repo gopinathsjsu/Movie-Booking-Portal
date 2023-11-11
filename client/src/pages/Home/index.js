@@ -5,18 +5,36 @@ import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
 import { GetAllMovies } from "../../apicalls/movies";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
+import Button from "../../components/Button";
 
 function Home() {
   const [searchText = "", setSearchText] = React.useState("");
   const [movies, setMovies] = React.useState([]);
+  const [currentlyShowing, setCurrentlyShowing] = React.useState([]);
+  const [upcomingMovies, setUpcomingMovies] = React.useState([]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const categorizeMovies = (movies) => {
+    const today = moment();
+    const currentlyShowing = movies.filter((movie) =>
+      moment(movie.releaseDate).isSameOrBefore(today)
+    );
+    const upcomingMovies = movies.filter((movie) =>
+      moment(movie.releaseDate).isAfter(today)
+    );
+
+    setCurrentlyShowing(currentlyShowing);
+    setUpcomingMovies(upcomingMovies);
+  };
+
   const getData = async () => {
     try {
       dispatch(ShowLoading());
       const response = await GetAllMovies();
       if (response.success) {
         setMovies(response.data);
+        categorizeMovies(response.data);
       } else {
         message.error(response.message);
       }
@@ -30,8 +48,37 @@ function Home() {
   useEffect(() => {
     getData();
   }, []);
+
+  const renderMovies = (movies) => {
+    return movies
+      .filter((movie) =>
+        movie.title.toLowerCase().includes(searchText.toLowerCase())
+      )
+      .map((movie) => (
+        <Col key={movie._id} span={6}>
+          <div
+            className="card flex flex-col gap-1 cursor-pointer"
+            onClick={() =>
+              navigate(
+                `/movie/${movie._id}?date=${moment().format("YYYY-MM-DD")}`
+              )
+            }
+          >
+            <img src={movie.poster} alt="" height={200} />
+
+            <div className="flex justify-center p-1">
+              <h1 className="text-md uppercase">{movie.title}</h1>
+            </div>
+          </div>
+        </Col>
+      ));
+  };
+
   return (
+
     <div>
+          <Button title="Subscribe to Premium" onClick={() => navigate("/premium")}/>
+
       <input
         type="text"
         className="search-input"
@@ -40,7 +87,13 @@ function Home() {
         onChange={(e) => setSearchText(e.target.value)}
       />
 
-      <Row gutter={[20]} className="mt-2">
+      <h2 className="text-lg mt-4 mb-2">Currently Showing</h2>
+      <Row gutter={[20]}>{renderMovies(currentlyShowing)}</Row>
+
+      <h2 className="text-lg mt-4 mb-2">Upcoming Movies</h2>
+      <Row gutter={[20]}>{renderMovies(upcomingMovies)}</Row>
+
+      {/* <Row gutter={[20]} className="mt-2">
         {movies
           .filter((movie) =>
             movie.title.toLowerCase().includes(searchText.toLowerCase())
@@ -63,7 +116,7 @@ function Home() {
               </div>
             </Col>
           ))}
-      </Row>
+      </Row> */}
     </div>
   );
 }
