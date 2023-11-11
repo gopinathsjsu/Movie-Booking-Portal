@@ -9,7 +9,6 @@ import { DeleteBookingOfUser } from "../../apicalls/bookings"
 import moment from "moment";
 
 function Bookings() {
-  const { user } = useSelector((state) => state.users);
   const [bookings = [], setBookings] = useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -67,6 +66,7 @@ function Bookings() {
           <Col span={12}>
             <div className="card p-2 flex justify-between uppercase">
               <div>
+                
                 <h1 className="text-xl">
                   {booking.show.movie.title} ({booking.show.movie.language})
                 </h1>
@@ -79,9 +79,7 @@ function Bookings() {
                   - {moment(booking.show.time, "HH:mm").format("hh:mm A")}
                 </h1>
                 <h1 className="text-sm">
-                  Amount : ₹{" "}
-                  {booking.show.ticketPrice * booking.seats.length +
-                    (user.membershipType === "Premium" ? 0 : 1.5)}
+                  Amount : ₹ {booking.show.ticketPrice * booking.seats.length}
                 </h1>
                 <h1 className="text-sm">Booking ID: {booking._id}</h1>
                 <button 
