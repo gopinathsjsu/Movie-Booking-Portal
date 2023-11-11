@@ -12,11 +12,13 @@ const moviesRoute = require("./routes/moviesRoute");
 const theatresRoute = require("./routes/theatresRoute");
 const bookingsRoute = require("./routes/bookingsRoute");
 const deleteBookingRoute = require("./routes/bookingsRoute")
+const subscriptionRoutes = require('./routes/subscription');
 
 app.use("/api/users", usersRoute);
 app.use("/api/movies", moviesRoute);
 app.use("/api/theatres", theatresRoute);
 app.use("/api/bookings", bookingsRoute);
+app.use('/api', subscriptionRoutes);
 
 const port = process.env.PORT || 5000;
 
