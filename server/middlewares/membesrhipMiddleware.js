@@ -19,7 +19,10 @@ const updateRewardPoints = async (userId, points) => {
   try {
     const user = await User.findById(userId);
 
-    if (user.membershipType !== "Guest") {
+    if (
+      user.membershipType === "Premium" ||
+      user.membershipType === "Regular"
+    ) {
       user.rewardPoints += points;
       if (user.rewardPoints < 0) {
         user.rewardPoints = 0;
