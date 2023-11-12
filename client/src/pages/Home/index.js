@@ -5,6 +5,7 @@ import { HideLoading, ShowLoading } from "../../redux/loadersSlice";
 import { GetAllMovies } from "../../apicalls/movies";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
+import Button from "../../components/Button";
 
 function Home() {
   const [searchText = "", setSearchText] = React.useState("");
@@ -74,7 +75,10 @@ function Home() {
   };
 
   return (
+
     <div>
+          <Button title="Subscribe to Premium" onClick={() => navigate("/premium")}/>
+
       <input
         type="text"
         className="search-input"
