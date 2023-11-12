@@ -15,7 +15,6 @@ function BookShow() {
   const { user } = useSelector((state) => state.users);
   const [show, setShow] = React.useState(null);
   const [selectedSeats, setSelectedSeats] = React.useState([]);
-  const [useRewardPoints, setUseRewardPoints] = React.useState(false);
   const params = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -97,7 +96,6 @@ function BookShow() {
         seats: selectedSeats,
         transactionId,
         user: user._id,
-        useRewardPoints: useRewardPoints,
       });
       if (response.success) {
         message.success(response.message);
@@ -119,13 +117,12 @@ function BookShow() {
       await fetchUserData();
       dispatch(ShowLoading());
       const totalCost =
-        calculateDiscountedPrice(show, selectedSeats.length, useRewardPoints) *
-        100;
+        calculateDiscountedPrice(show, selectedSeats.length) * 100;
       let transactionId = "";
       if (
         totalCost > 0 &&
         (user.membershipType === "Guest" ||
-          (totalCost > 0 && user.rewardPoints >= 0))
+          (100 * user.rewardPoints < totalCost && user.rewardPoints >= 0))
       ) {
         // Process Stripe payment if user is not Premium or doesn't have enough points
 
@@ -134,7 +131,6 @@ function BookShow() {
           show: params.id,
           seats: selectedSeats,
           user: user._id,
-          useRewardPoints: useRewardPoints,
         }); // Stripe expects amount in cents
         transactionId = paymentResponse.data; // Assuming the payment response contains the transaction ID
       }
@@ -144,13 +140,14 @@ function BookShow() {
         show: params.id,
         seats: selectedSeats,
         user: user._id,
-        transactionId: transactionId,
-        useRewardPoints: useRewardPoints,
+        transactionId,
       });
 
       if (bookingResponse.success) {
         message.success(bookingResponse.message);
-        navigate("/");
+        if (user.membershipType !== "Guest") {
+          navigate("/profile");
+        }
       } else {
         message.error(bookingResponse.message);
       }
@@ -164,7 +161,7 @@ function BookShow() {
   const calculateDiscountedPrice = (
     show,
     selectedSeatsLength,
-    useRewardPoints
+    useRewardPoints = true
   ) => {
     let discount = 0;
     let showType = "";
@@ -285,38 +282,16 @@ function BookShow() {
                 {/* Discounting prices of the tickets */}
                 <h1 className="text-sm">
                   <b>Total Price</b> :{" "}
-                  {calculateDiscountedPrice(
-                    show,
-                    selectedSeats.length,
-                    useRewardPoints
-                  )}
+                  {calculateDiscountedPrice(show, selectedSeats.length)}
                 </h1>
               </div>
             </div>
-            {user.membershipType !== "Guest" && (
-              <div className="flex items-center gap-2 mb-2">
-                <input
-                  type="checkbox"
-                  checked={useRewardPoints}
-                  onChange={(e) => setUseRewardPoints(e.target.checked)}
-                />
-                <label>Use Reward Points</label>
-              </div>
-            )}
 
-            {calculateDiscountedPrice(
-              show,
-              selectedSeats.length,
-              useRewardPoints
-            ) > 0 ? (
+            {calculateDiscountedPrice(show, selectedSeats.length) > 0 ? (
               <StripeCheckout
                 token={onToken}
                 amount={
-                  calculateDiscountedPrice(
-                    show,
-                    selectedSeats.length,
-                    useRewardPoints
-                  ) * 100
+                  calculateDiscountedPrice(show, selectedSeats.length) * 100
                 }
                 billingAddress
                 stripeKey="pk_test_51OHNrnDNaesZhvwBfm44JXUOnnUav9iuzU26U1bZNFC7XynYRwbF5zQWQ5OjFD7wK5xA2hjZFril0nWHrlmCde9C0039iJmSqJ"

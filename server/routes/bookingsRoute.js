@@ -16,7 +16,6 @@ router.post("/make-payment", authMiddleware, async (req, res) => {
       show: showId,
       seats: seats,
       user: user,
-      useRewardpoints: useRewardpoints,
     } = req.body.payload;
 
     const show = await Show.findById(showId);
@@ -25,9 +24,9 @@ router.post("/make-payment", authMiddleware, async (req, res) => {
     let amountToCharge = totalCost;
 
     if (
-      user.membershipType !== "Guest" &&
-      user.rewardPoints &&
-      useRewardpoints
+      (user.membershipType === "Premium" ||
+        user.membershipType === "Regular") &&
+      user.rewardPoints
     ) {
       amountToCharge = Math.max(0, amountToCharge - user.rewardPoints);
     }
@@ -74,7 +73,6 @@ router.post("/book-show", authMiddleware, async (req, res) => {
       seats: seats,
       show: showId,
       transactionId: transactionId,
-      useRewardpoints: useRewardpoints,
     } = req.body;
     const user = req.user;
     const show = await Show.findById(showId);
@@ -83,7 +81,7 @@ router.post("/book-show", authMiddleware, async (req, res) => {
     let amountToPay = totalCost;
     let usedRewardPoints = 0;
 
-    if (user.membershipType !== "Guest" || useRewardpoints) {
+    if (user.membershipType !== "Guest") {
       if (user.rewardPoints >= totalCost) {
         // Deduct reward points if user is Premium and has enough points
         usedRewardPoints = totalCost;
