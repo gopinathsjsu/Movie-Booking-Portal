@@ -44,39 +44,36 @@ function BookShow() {
 
     return (
       <div className="flex gap-1 flex-col p-2 card">
-        {Array.from(Array(rows).keys()).map((row, rowIndex) => {
+        {Array.from(Array(rows).keys()).map((seat, index) => {
           return (
-            <div className="flex gap-1 justify-center" key={rowIndex}>
-              {Array.from(Array(columns).keys()).map((column, columnIndex) => {
-                const seatNumber = row * columns + column + 1;
+            <div className="flex gap-1 justify-center">
+              {Array.from(Array(columns).keys()).map((column, index) => {
+                const seatNumber = seat * columns + column + 1;
                 let seatClass = "seat";
 
-                if (selectedSeats.includes(seatNumber)) {
-                  seatClass += " selected-seat";
+                if (selectedSeats.includes(seat * columns + column + 1)) {
+                  seatClass = seatClass + " selected-seat";
                 }
 
-                if (show.bookedSeats.includes(seatNumber)) {
-                  seatClass += " booked-seat";
+                if (show.bookedSeats.includes(seat * columns + column + 1)) {
+                  seatClass = seatClass + " booked-seat";
                 }
 
                 return (
-                  seatNumber <= totalSeats && (
+                  seat * columns + column + 1 <= totalSeats && (
                     <div
                       className={seatClass}
-                      key={columnIndex}
                       onClick={() => {
                         if (selectedSeats.includes(seatNumber)) {
                           setSelectedSeats(
                             selectedSeats.filter((item) => item !== seatNumber)
                           );
-                        } else if (selectedSeats.length < 8) {
-                          setSelectedSeats([...selectedSeats, seatNumber]);
                         } else {
-                          message.warning("You can only select up to 8 seats.");
+                          setSelectedSeats([...selectedSeats, seatNumber]);
                         }
                       }}
                     >
-                      <h1 className="text-sm">{seatNumber}</h1>
+                      <h1 className="text-sm">{seat * columns + column + 1}</h1>
                     </div>
                   )
                 );
@@ -99,7 +96,9 @@ function BookShow() {
       });
       if (response.success) {
         message.success(response.message);
-        if (user.membershipType !== "Guest") {
+        if (user.membershipType === "Guest") {
+          navigate("/");
+        } else {
           navigate("/profile");
         }
       } else {
@@ -111,6 +110,26 @@ function BookShow() {
       dispatch(HideLoading());
     }
   };
+
+  // const onToken = async (token) => {
+  //   try {
+  //     const totalAmount =
+  //       selectedSeats.length * show.ticketPrice * 100 +
+  //       (user.membershipType === "Premium" ? 0 : 150);
+  //     dispatch(ShowLoading());
+  //     const response = await MakePayment(token, totalAmount);
+  //     if (response.success) {
+  //       message.success(response.message);
+  //       book(response.data);
+  //     } else {
+  //       message.error(response.message);
+  //     }
+  //     dispatch(HideLoading());
+  //   } catch (error) {
+  //     message.error(error.message);
+  //     dispatch(HideLoading());
+  //   }
+  // };
 
   const onToken = async (token) => {
     try {
@@ -144,7 +163,9 @@ function BookShow() {
 
       if (bookingResponse.success) {
         message.success(bookingResponse.message);
-        if (user.membershipType !== "Guest") {
+        if (user.membershipType === "Guest") {
+          navigate("/");
+        } else {
           navigate("/profile");
         }
       } else {
@@ -197,7 +218,6 @@ function BookShow() {
     fetchUserData();
     getData();
   }, []);
-
   return (
     show && (
       <div>
