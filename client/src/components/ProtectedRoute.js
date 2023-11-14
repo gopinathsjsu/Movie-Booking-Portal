@@ -44,12 +44,9 @@ function ProtectedRoute({ children }) {
       <div className="layout p-1">
         <div className="header bg-primary flex justify-between p-2">
           <div>
-            <h1
-              className="text-2xl text-white cursor-pointer"
+            <h1 className="text-2xl text-white cursor-pointer"
               onClick={() => navigate("/")}
-            >
-              AG-WIZ MOVIES
-            </h1>
+            >AG-WIZ MOVIES</h1>
           </div>
 
           <div className="bg-white p-1 flex gap-1">
@@ -59,8 +56,6 @@ function ProtectedRoute({ children }) {
               onClick={() => {
                 if (user.isAdmin) {
                   navigate("/admin");
-                } else if (user.membershipType === "Guest") {
-                  navigate("/");
                 } else {
                   navigate("/profile");
                 }
