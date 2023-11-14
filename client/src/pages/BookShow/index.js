@@ -99,6 +99,7 @@ function BookShow() {
       });
       if (response.success) {
         message.success(response.message);
+
         if (user.membershipType !== "Guest") {
           navigate("/profile");
         }
@@ -194,16 +195,11 @@ function BookShow() {
   };
 
   const findMembership = (user) => {
-    try {
-      const typeMembership = user.membershipType;
-      if (typeMembership === "Regular" || typeMembership === "Premium") {
-        return "Reward Points: " + user.rewardPoints;
-      } else {
-        return "";
-      }
-    } catch (error) {
-      message.error(error.message);
-      console.error("Error fetching user data:", error);
+    const typeMembership = user.membershipType;
+    if (typeMembership === "Regular" || typeMembership === "Premium") {
+      return "Reward Points: " + user.rewardPoints;
+    } else {
+      return "";
     }
   };
 
