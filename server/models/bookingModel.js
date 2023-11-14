@@ -16,7 +16,7 @@ const bookingSchema = new mongoose.Schema(
     },
     transactionId: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   { timestamps: true }
