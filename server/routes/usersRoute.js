@@ -25,10 +25,7 @@ router.post("/register", async (req, res) => {
     const newUser = new User(req.body);
     await newUser.save();
 
-    res.send({
-      success: true,
-      message: "Registration Successfull , Please login",
-    });
+    res.send({ success: true, message: "Registration Successfull , Please login" });
   } catch (error) {
     res.send({
       success: false,
@@ -64,7 +61,7 @@ router.post("/login", async (req, res) => {
 
     // create and assign a token
     const token = jwt.sign({ userId: user._id }, process.env.jwt_secret, {
-      expiresIn: "1h",
+      expiresIn: "1d",
     });
 
     res.send({
@@ -83,27 +80,17 @@ router.post("/login", async (req, res) => {
 // get user details by id
 router.get("/get-current-user", authMiddleware, async (req, res) => {
   try {
+    const user = await User.findById(req.body.userId).select("-password");
     res.send({
       success: true,
       message: "User details fetched successfully",
-      data: req.user,
+      data: user,
     });
   } catch (error) {
     res.send({
       success: false,
       message: error.message,
     });
-  }
-});
-
-router.put("/upgrade-membership", async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    user.membershipType = "Premium";
-    await user.save();
-    res.status(200).send({ message: "Membership upgraded to Premium" });
-  } catch (error) {
-    res.status(500).send({ message: "Error upgrading membership" });
   }
 });
 
