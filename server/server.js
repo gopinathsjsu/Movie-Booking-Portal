@@ -1,5 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const usersRoute = require("./routes/usersRoute");
+
 require("dotenv").config();
 
 const app = express();
@@ -17,5 +19,7 @@ mongoose
   .catch((err) => console.error("Unable to connect to MongoDB", err));
 
 const port = process.env.PORT || 5000;
+
+app.use("/api/users", usersRoute);
 
 app.listen(port, () => console.log(`Node JS - Listening on port ${port}`));
