@@ -84,7 +84,7 @@ Find all our project documentation, including sprint plans, task sheets, and mor
 1. [Github Repository](https://github.com/gopinathsjsu/teamproject-agile-wizards)
 2. [Project Journal](/documentation/CMPE202-AGWIZ-JOURNAL.pdf)
 3. [Sprint Task Sheet](/documentation/Agile%20Wizards%20Sprint%20Sheet.xlsx)
-4. [Project Board]()
+4. [Project Board](/documentation/project_board/)
 5. [UI Wireframes](/documentation/AGILEWIZARDS-WIREFRAMES.pdf)
 
 ## Feedback
